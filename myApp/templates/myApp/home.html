@@ -227,6 +227,40 @@
     display: none;
   }
   #recordModal .rm-summary.show { display: block; }
+  #recordModal .rm-questions {
+    display: none;
+    margin-top: 14px;
+    background: linear-gradient(135deg, rgba(var(--navy-rgb), 0.06) 0%, rgba(var(--teal-rgb), 0.1) 100%);
+    border: 1px solid rgba(var(--teal-rgb), 0.25);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+  #recordModal .rm-questions.show { display: block; }
+  #recordModal .rm-questions h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  #recordModal .rm-questions > p {
+    font-size: 0.82rem;
+    color: var(--sage);
+    margin-bottom: 12px;
+    line-height: 1.45;
+  }
+  #recordModal .rm-questions ol {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--ink);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  #recordModal .rm-questions li {
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+  #recordModal .rm-questions li:last-child { margin-bottom: 0; }
   #recordModal .rm-summary h2 { margin-bottom: 8px; }
   #recordModal .rm-summary-body {
     font-size: 0.98rem;
@@ -403,6 +437,12 @@
           <span class="rm-placeholder">Your words will appear here as you speak…</span>
         </div>
 
+        <div class="rm-questions" id="rmQuestions">
+          <h2>Questions for your doctor</h2>
+          <p>Based on your visit — bring these to your next appointment or call if something feels urgent.</p>
+          <ol id="rmQuestionsList"></ol>
+        </div>
+
         <div class="rm-summary" id="rmSummary">
           <h2>Visit summary</h2>
           <div class="rm-summary-body" id="rmSummaryBody"></div>
@@ -439,7 +479,7 @@
 
   // --- DOM ---
   var $modal, $statusText, $timer, $pause, $stop, $discard,
-      $transcript, $wordCount, $summary, $summaryBody, $lang;
+      $transcript, $wordCount, $summary, $summaryBody, $questions, $questionsList, $lang;
 
   function isLiveTranscription() {
     return rec.pendingXhr > 0 ||
@@ -564,6 +604,8 @@
     $transcript.innerHTML = '<span class="rm-placeholder">Your words will appear here as you speak…</span>';
     $summary.classList.remove("show");
     $summaryBody.textContent = "";
+    if ($questions) $questions.classList.remove("show");
+    if ($questionsList) $questionsList.innerHTML = "";
     $pause.textContent = "Pause";
     $pause.disabled = false;
     $stop.disabled = false;
@@ -703,6 +745,19 @@
     $transcript.scrollTop = $transcript.scrollHeight;
   }
 
+  function renderDoctorQuestions(questions) {
+    if (!$questions || !$questionsList) return;
+    if (!questions || !questions.length) {
+      $questions.classList.remove("show");
+      $questionsList.innerHTML = "";
+      return;
+    }
+    $questionsList.innerHTML = questions.map(function (q) {
+      return "<li>" + escapeHtml(q) + "</li>";
+    }).join("");
+    $questions.classList.add("show");
+  }
+
   // --- minimal, safe Markdown renderer for the summary ---
   function escapeHtml(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -808,7 +863,8 @@
 
     setState("summarizing", "Building your summary…");
     $summary.classList.add("show");
-    $summaryBody.innerHTML = '<div class="rm-summary-loading"><span class="rm-spinner"></span> Building your visit summary…</div>';
+    if ($questions) $questions.classList.remove("show");
+    $summaryBody.innerHTML = '<div class="rm-summary-loading"><span class="rm-spinner"></span> Understanding your visit and preparing questions…</div>';
 
     fetch(SUMMARIZE_URL, {
       method: "POST",
@@ -818,6 +874,9 @@
       if (!resp.ok) throw new Error("summary_failed");
       return resp.json();
     }).then(function (data) {
+      if (data && data.doctor_questions) {
+        renderDoctorQuestions(data.doctor_questions);
+      }
       if (data && data.summary) {
         $summaryBody.innerHTML = renderMarkdown(data.summary);
       } else {
@@ -876,6 +935,8 @@
     $wordCount = $("rmWordCount");
     $summary = $("rmSummary");
     $summaryBody = $("rmSummaryBody");
+    $questions = $("rmQuestions");
+    $questionsList = $("rmQuestionsList");
     $lang = $("rmLang");
 
     var trigger = $("recordTrigger");

@@ -11,8 +11,10 @@ required when an endpoint is actually called.
 """
 
 import base64
+import json
 import logging
 import os
+import re
 import tempfile
 
 from django.conf import settings
@@ -135,19 +137,28 @@ def transcribe_audio_b64(audio_b64, fmt, language=None):
 
 
 _SUMMARY_SYSTEM_PROMPT = """You are Aira, a careful medical-visit explainer. You are given a \
-transcript of a patient's doctor visit. Produce a clear, plain-language "Visit Summary" \
-that a patient with no medical background can understand (about a 6th-grade reading level).
+transcript of a patient's doctor visit. Read the ENTIRE conversation to understand context: \
+why the patient came in, what symptoms or concerns were discussed, what the clinician said, \
+what was prescribed or ordered, what follow-up was mentioned, and what may have been rushed \
+or left unclear.
 
-Use EXACTLY these Markdown section headers, in this order:
+Return valid JSON only (no markdown fences) with exactly this shape:
+{
+  "summary": "<markdown visit summary>",
+  "doctor_questions": ["<question 1>", "<question 2>", ...]
+}
+
+The "summary" field must use EXACTLY these Markdown section headers, in this order:
 
 ## Key points
 ## Diagnoses
 ## Medications & dosages
 ## Instructions
 ## Follow-up / next steps
-## Questions to ask at the next visit
 
-Rules:
+Do NOT put doctor questions inside "summary" — they go only in "doctor_questions".
+
+Rules for "summary":
 - Write the ENTIRE summary in the SAME language the transcript is in. If the visit was in \
 Spanish, answer in Spanish; if in Chinese, answer in Chinese; and so on. Keep the section \
 headers in that language too (translate them naturally).
@@ -174,25 +185,69 @@ to a concrete date when the visit date is known, otherwise keep the relative phr
   - Dosages with the number, unit, and frequency (e.g., 10 mg, twice a day).
   Only reformat numbers actually present in the transcript — never invent or guess a digit. \
 If a phone number or date is clearly incomplete or garbled, say so rather than fabricating it.
-- Keep bullets short and concrete. This is a memory aid, not medical advice."""
+- Keep bullets short and concrete. This is a memory aid, not medical advice.
+
+Rules for "doctor_questions":
+- Generate 5–8 specific questions the patient should ask their doctor — at the next visit, \
+or sooner by phone/message if something sounds urgent.
+- Base every question on THIS visit's context: diagnoses named, medications prescribed, tests \
+ordered, instructions given, timelines mentioned, AND gaps where the clinician did not explain \
+something clearly.
+- Cover where appropriate: what the diagnosis means for daily life, why this medication was chosen, \
+side effects and what to watch for, how long until improvement, test result timing, what to do if \
+symptoms worsen, alternatives discussed or not discussed, follow-up scheduling, and lifestyle changes.
+- Write each question in the patient's voice, warm and plain (e.g. "How long should I take this \
+before I know if it's working?", "What symptoms mean I should call you right away?").
+- Use the SAME language as the transcript.
+- Do NOT invent facts not supported by the transcript. If the visit was vague, ask clarifying \
+questions (e.g. "Can you explain again what this test is looking for?").
+- Return at least 3 questions even for short visits; return up to 8 for rich visits."""
+
+
+def _parse_summary_response(raw_text):
+    """Parse JSON from GPT; fall back to plain markdown if needed."""
+    text = (raw_text or "").strip()
+    if not text:
+        return {"summary": "", "doctor_questions": []}
+
+    # Strip optional ```json fences
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+
+    try:
+        data = json.loads(text)
+        if isinstance(data, dict):
+            summary = (data.get("summary") or "").strip()
+            questions = data.get("doctor_questions") or []
+            if not isinstance(questions, list):
+                questions = []
+            questions = [str(q).strip() for q in questions if str(q).strip()]
+            return {"summary": summary, "doctor_questions": questions}
+    except json.JSONDecodeError:
+        logger.warning("summarize: response was not valid JSON, using raw markdown")
+
+    return {"summary": text, "doctor_questions": []}
 
 
 def summarize_visit(transcript):
-    """Generate a structured Visit Summary from a full transcript.
+    """Generate a structured Visit Summary and doctor questions from a full transcript.
 
-    Returns ``{"summary": "..."}``. Raises on API failure so the view can map it
-    to a 502 (the transcript itself is already saved client-side).
+    Returns ``{"summary": "...", "doctor_questions": [...]}``. Raises on API failure
+    so the view can map it to a 502 (the transcript itself is already saved client-side).
     """
     transcript = (transcript or "").strip()
     if not transcript:
-        return {"summary": ""}
+        return {"summary": "", "doctor_questions": []}
 
     resp = _get_client().chat.completions.create(
         model=settings.OPENAI_SUMMARY_MODEL,
         temperature=0.2,
+        response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": _SUMMARY_SYSTEM_PROMPT},
             {"role": "user", "content": transcript[:24000]},
         ],
     )
-    return {"summary": resp.choices[0].message.content or ""}
+    raw = resp.choices[0].message.content or ""
+    return _parse_summary_response(raw)

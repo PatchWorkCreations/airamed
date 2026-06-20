@@ -89,9 +89,9 @@ def voice_transcribe(request):
 @csrf_exempt
 @require_POST
 def visit_summarize(request):
-    """Turn a full visit transcript into a structured Visit Summary via GPT.
+    """Turn a full visit transcript into a summary and doctor questions via GPT.
 
-    Body: {"transcript": "..."} -> {"summary": "..."} or 502 on failure.
+    Body: {"transcript": "..."} -> {"summary": "...", "doctor_questions": [...]}
     """
     try:
         data = json.loads(request.body or b'{}')
@@ -100,7 +100,7 @@ def visit_summarize(request):
 
     transcript = (data.get('transcript') or '').strip()
     if not transcript:
-        return JsonResponse({'summary': ''})
+        return JsonResponse({'summary': '', 'doctor_questions': []})
 
     try:
         result = voice_ai.summarize_visit(transcript)
