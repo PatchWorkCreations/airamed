@@ -36,7 +36,13 @@ SECRET_KEY = 'django-insecure-60aazhw%0$j&(!@!v=8lhj5@n+60u%cx&7^sx)38575b6$lq+h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS takes bare hostnames only — no scheme (https://) and no trailing slash.
+ALLOWED_HOSTS = [
+    'www.airamed.org',
+    'airamed.org',
+    'localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition
