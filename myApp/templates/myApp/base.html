@@ -47,13 +47,14 @@
 
   /* ---------- Top bar ---------- */
   header {
+    position: relative;
     padding: 28px 0 0;
+    z-index: 200;
   }
   .header-row {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
     gap: 14px;
   }
   .brand {
@@ -68,15 +69,85 @@
   @media (max-width: 480px) {
     .brand-logo { height: 38px; }
   }
-  nav { display: flex; gap: 20px; flex-wrap: wrap; }
-  nav a {
-    font-size: 0.92rem;
-    color: var(--sage);
-    text-decoration: none;
-    font-weight: 600;
+
+  .nav-menu {
+    position: relative;
+    flex-shrink: 0;
   }
-  nav a:hover { color: var(--pine); }
-  nav a.active { color: var(--pine); border-bottom: 2px solid var(--terracotta); padding-bottom: 2px; }
+
+  .nav-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--white);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .nav-toggle:hover { border-color: var(--pine); }
+  .nav-toggle:focus-visible {
+    outline: 2px solid var(--pine);
+    outline-offset: 2px;
+  }
+  .nav-toggle-bar {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--pine);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  header.nav-open .nav-toggle-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  header.nav-open .nav-toggle-bar:nth-child(2) {
+    opacity: 0;
+  }
+  header.nav-open .nav-toggle-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .site-nav {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    flex-direction: column;
+    gap: 0;
+    min-width: 188px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 6px 0;
+    box-shadow: 0 10px 28px rgba(31, 78, 71, 0.12);
+  }
+  header.nav-open .site-nav { display: flex; }
+  .site-nav a {
+    font-size: 0.95rem;
+    color: var(--sage);
+    font-weight: 600;
+    padding: 11px 20px;
+    border-bottom: none;
+  }
+  .site-nav a:hover {
+    color: var(--pine);
+    background: rgba(46, 124, 110, 0.06);
+  }
+  .site-nav a.active {
+    color: var(--pine);
+    background: rgba(46, 124, 110, 0.1);
+    border-bottom: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nav-toggle-bar { transition: none; }
+  }
 
   /* ---------- Hero ---------- */
   .hero {
@@ -376,18 +447,32 @@
 </head>
 <body>
 
-  <header>
+  <header id="siteHeader">
     <div class="wrap header-row">
       <a href="{% url 'home' %}" class="brand" aria-label="NeuroMed Aira — home">
         <img src="https://res.cloudinary.com/dk52yeq9x/image/upload/v1770301408/Neuromed_Aira_Logo-09_qpgvss.png" alt="NeuroMed Aira" class="brand-logo">
       </a>
-      <nav>
-        <a href="{% url 'about' %}" class="{% if active == 'about' %}active{% endif %}">About</a>
-        <a href="{% url 'faq' %}" class="{% if active == 'faq' %}active{% endif %}">FAQ</a>
-        <a href="{% url 'privacy' %}" class="{% if active == 'privacy' %}active{% endif %}">Privacy</a>
-        <a href="{% url 'terms' %}" class="{% if active == 'terms' %}active{% endif %}">Terms</a>
-        <a href="{% url 'contact' %}" class="{% if active == 'contact' %}active{% endif %}">Contact</a>
-      </nav>
+      <div class="nav-menu">
+        <button
+          class="nav-toggle"
+          id="navToggle"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="siteNav"
+        >
+          <span class="nav-toggle-bar"></span>
+          <span class="nav-toggle-bar"></span>
+          <span class="nav-toggle-bar"></span>
+        </button>
+        <nav id="siteNav" class="site-nav">
+          <a href="{% url 'about' %}" class="{% if active == 'about' %}active{% endif %}">About</a>
+          <a href="{% url 'faq' %}" class="{% if active == 'faq' %}active{% endif %}">FAQ</a>
+          <a href="{% url 'privacy' %}" class="{% if active == 'privacy' %}active{% endif %}">Privacy</a>
+          <a href="{% url 'terms' %}" class="{% if active == 'terms' %}active{% endif %}">Terms</a>
+          <a href="{% url 'contact' %}" class="{% if active == 'contact' %}active{% endif %}">Contact</a>
+        </nav>
+      </div>
     </div>
   </header>
 
@@ -406,5 +491,37 @@
   </footer>
 
   {% block scripts %}{% endblock %}
+  <script>
+  (function () {
+    var header = document.getElementById("siteHeader");
+    var toggle = document.getElementById("navToggle");
+    var nav = document.getElementById("siteNav");
+    if (!header || !toggle || !nav) return;
+
+    function setOpen(open) {
+      header.classList.toggle("nav-open", open);
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    }
+
+    toggle.addEventListener("click", function () {
+      setOpen(!header.classList.contains("nav-open"));
+    });
+
+    document.addEventListener("click", function (ev) {
+      if (!header.classList.contains("nav-open")) return;
+      if (ev.target.closest(".nav-menu")) return;
+      setOpen(false);
+    });
+
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape") setOpen(false);
+    });
+
+    nav.querySelectorAll("a").forEach(function (link) {
+      link.addEventListener("click", function () { setOpen(false); });
+    });
+  })();
+  </script>
 </body>
 </html>

@@ -90,19 +90,32 @@
   #recordModal .rm-orb {
     width: 120px;
     height: 120px;
-    border-radius: 50%;
-    background: var(--terracotta);
-    box-shadow: 0 8px 24px rgba(46, 124, 110, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 6px 0 18px;
-    transition: background 0.2s ease;
   }
-  #recordModal .rm-orb svg { width: 46px; height: 46px; }
-  #recordModal[data-state="paused"] .rm-orb { background: #C7972E; box-shadow: 0 8px 24px rgba(199, 151, 46, 0.35); }
-  #recordModal[data-state="summarizing"] .rm-orb { background: #3B6FB0; box-shadow: 0 8px 24px rgba(59, 111, 176, 0.35); }
-  #recordModal[data-state="error"] .rm-orb { background: var(--sage); box-shadow: none; }
+  #recordModal .rm-orb img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    display: block;
+    transform-origin: center center;
+    will-change: transform;
+  }
+  #recordModal[data-state="recording"] .rm-orb img {
+    animation: rmHeartbeat 0.88s ease-in-out infinite;
+  }
+  #recordModal[data-state="summarizing"] .rm-orb img {
+    animation: rmHeartbeat 1.05s ease-in-out infinite;
+  }
+  @keyframes rmHeartbeat {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 2px 8px rgba(46, 124, 110, 0.15)); }
+    8%        { transform: scale(1.16); filter: drop-shadow(0 0 20px rgba(46, 124, 110, 0.6)); }
+    16%       { transform: scale(1); filter: drop-shadow(0 2px 8px rgba(46, 124, 110, 0.15)); }
+    24%       { transform: scale(1.1); filter: drop-shadow(0 0 14px rgba(59, 111, 176, 0.5)); }
+    32%       { transform: scale(1); filter: drop-shadow(0 2px 8px rgba(46, 124, 110, 0.15)); }
+  }
 
   #recordModal .rm-timer {
     font-family: 'Fraunces', serif;
@@ -269,6 +282,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     #recordModal[data-state="recording"] .rm-dot { animation: none; }
+    #recordModal[data-state="recording"] .rm-orb img,
+    #recordModal[data-state="summarizing"] .rm-orb img { animation: none; }
     #recordModal .rm-spinner { animation: none; }
   }
 </style>
@@ -290,7 +305,7 @@
         </svg>
       </button>
       <div class="record-label">Press to record</div>
-      <div class="record-sub">Press it now, before your doctor starts talking.</div>
+      <div class="record-sub">Press this before your visit begins.</div>
     </section>
 
     <section class="steps wrap">
@@ -339,12 +354,14 @@
           <span id="rmStatusText">Getting ready…</span>
         </div>
 
-        <div class="rm-orb" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="9" y="2" width="6" height="12" rx="3" fill="white"/>
-            <path d="M5 11a7 7 0 0014 0" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-            <path d="M12 18v3" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
+        <div class="rm-orb" id="rmOrb" aria-hidden="true">
+          <img
+            src="https://res.cloudinary.com/dk52yeq9x/image/upload/v1778844684/playstore-removebg-preview_ewayj1.png"
+            alt=""
+            width="100"
+            height="100"
+            decoding="async"
+          />
         </div>
 
         <div class="rm-timer" id="rmTimer">00:00</div>
@@ -416,14 +433,39 @@
     stream: null, mr: null, mime: "", format: "webm",
     open: false, recording: false, paused: false,
     seq: 0, segments: {}, transcript: "", language: "auto",
-    pendingXhr: 0, segTimer: null, tickTimer: null,
+    pendingXhr: 0, segTimer: null, tickTimer: null, meterLoop: null,
     startedAt: 0, elapsedMs: 0, summarizing: false, drainPoll: null,
+    hearingSpeech: false,
     audioCtx: null, analyser: null, meterData: null
   };
 
   // --- DOM ---
   var $modal, $statusText, $timer, $pause, $stop, $discard,
       $transcript, $wordCount, $summary, $summaryBody, $lang;
+
+  function isLiveTranscription() {
+    return rec.pendingXhr > 0 ||
+      (rec.recording && !rec.paused && rec.hearingSpeech);
+  }
+
+  function startMeterLoop() {
+    stopMeterLoop();
+    rec.meterLoop = setInterval(function () {
+      if (!rec.recording || rec.paused) {
+        rec.hearingSpeech = false;
+      } else {
+        rec.hearingSpeech = currentLevel() > SILENCE_RMS;
+      }
+    }, 80);
+  }
+
+  function stopMeterLoop() {
+    if (rec.meterLoop) {
+      clearInterval(rec.meterLoop);
+      rec.meterLoop = null;
+    }
+    rec.hearingSpeech = false;
+  }
 
   function $(id) { return document.getElementById(id); }
 
@@ -517,6 +559,7 @@
     if (rec.segTimer) { clearTimeout(rec.segTimer); rec.segTimer = null; }
     if (rec.tickTimer) { clearInterval(rec.tickTimer); rec.tickTimer = null; }
     if (rec.drainPoll) { clearTimeout(rec.drainPoll); rec.drainPoll = null; }
+    stopMeterLoop();
 
     $timer.textContent = "00:00";
     $wordCount.textContent = "0 words";
@@ -542,6 +585,7 @@
       rec.startedAt = Date.now();
       setState("recording", "Recording");
       rec.tickTimer = setInterval(updateTimer, 1000);
+      startMeterLoop();
       startSegment();
     }).catch(function (err) {
       var msg = "Microphone access was blocked. Allow the mic and try again.";
@@ -646,7 +690,7 @@
 
   function renderTranscript() {
     rec.transcript = buildTranscript();
-    var live = rec.recording && rec.pendingXhr > 0;
+    var live = isLiveTranscription();
 
     if (!rec.transcript) {
       var msg = live ? "Listening…" : "Your words will appear here as you speak…";
@@ -705,6 +749,7 @@
       if (rec.mr && rec.mr.state !== "inactive") rec.mr.stop();
       rec.elapsedMs += rec.startedAt ? (Date.now() - rec.startedAt) : 0;
       rec.startedAt = 0;
+      stopMeterLoop();
       $pause.textContent = "Resume";
       setState("paused", "Paused");
     } else {
@@ -712,6 +757,7 @@
       rec.startedAt = Date.now();
       $pause.textContent = "Pause";
       setState("recording", "Recording");
+      startMeterLoop();
       startSegment();
     }
   }
@@ -721,6 +767,7 @@
     if (!rec.recording) return;
     rec.recording = false;
     rec.paused = false;
+    stopMeterLoop();
     if (rec.segTimer) { clearTimeout(rec.segTimer); rec.segTimer = null; }
     if (rec.tickTimer) { clearInterval(rec.tickTimer); rec.tickTimer = null; }
     if (rec.mr && rec.mr.state !== "inactive") rec.mr.stop();  // flush final blob
@@ -799,6 +846,7 @@
     rec.recording = false;
     rec.paused = false;
     rec.summarizing = false;
+    stopMeterLoop();
     if (rec.segTimer) { clearTimeout(rec.segTimer); rec.segTimer = null; }
     if (rec.tickTimer) { clearInterval(rec.tickTimer); rec.tickTimer = null; }
     if (rec.drainPoll) { clearTimeout(rec.drainPoll); rec.drainPoll = null; }
