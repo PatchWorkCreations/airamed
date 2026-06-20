@@ -40,8 +40,17 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'www.airamed.org',
     'airamed.org',
+    'airamed-production.up.railway.app',
     'localhost',
     '127.0.0.1',
+]
+
+# CSRF_TRUSTED_ORIGINS requires the full scheme (https://) — used for form POSTs
+# (admin, future forms) over HTTPS on these domains.
+CSRF_TRUSTED_ORIGINS = [
+    'https://www.airamed.org',
+    'https://airamed.org',
+    'https://airamed-production.up.railway.app',
 ]
 
 
