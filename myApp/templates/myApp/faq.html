@@ -1,0 +1,55 @@
+{% extends "myApp/base.html" %}
+
+{% block title %}FAQ — Aira{% endblock %}
+
+{% block content %}
+  <main class="page wrap">
+    <div class="page-eyebrow">Common questions</div>
+    <h1>Frequently asked questions</h1>
+    <p class="updated">Simple answers to the things people usually ask.</p>
+
+    <div class="faq-item">
+      <div class="faq-q">Do I need to download an app?</div>
+      <div class="faq-a">No. You can record your visit right here on this website. Nothing to install, nothing to set up.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Does my doctor need to know I'm recording?</div>
+      <div class="faq-a">In many places, yes — some states require everyone in the conversation to be aware a recording is happening. We recommend letting your doctor know before you start. It's a simple, respectful step, and it's your responsibility as the person making the recording. See our <a href="{% url 'terms' %}">Terms of Service</a> for more detail.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What happens to my recording?</div>
+      <div class="faq-a">Your recording is processed in real time to generate your plain-language explanation. We don't keep a long-term copy of the audio itself. For full detail, see our <a href="{% url 'privacy' %}">Privacy Policy</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What languages does Aira support?</div>
+      <div class="faq-a">Aira explains your visit in the language you're most comfortable with. If you don't see your language listed in the app, let us know — we're adding more over time.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Is this the same as my doctor's notes?</div>
+      <div class="faq-a">No. Aira is a plain-language explanation of your visit, written for you, not a medical record or official chart note. It's meant to help you understand and remember, not to replace what your doctor's office keeps on file.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Can Aira give me medical advice?</div>
+      <div class="faq-a">No. Aira helps you understand what was said and prepares questions for your next visit. It does not diagnose, treat, or replace your doctor's judgment. Always follow your doctor's instructions and contact them directly with medical concerns.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Is Aira free?</div>
+      <div class="faq-a">Details on pricing are available within the app. We'll always be upfront about any costs before you're asked to pay anything.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">I'm a healthcare provider or health system. How do I learn more?</div>
+      <div class="faq-a">We'd love to talk. Please visit our <a href="{% url 'contact' %}">contact page</a> to reach our team.</div>
+    </div>
+
+    <div class="callout">
+      <p>Don't see your question here? <a href="{% url 'contact' %}">Reach out to us directly</a> — we're happy to help.</p>
+    </div>
+  </main>
+{% endblock %}

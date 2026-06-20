@@ -1,0 +1,856 @@
+{% extends "myApp/base.html" %}
+
+{% block title %}Aira — Record your visit. Understand your care.{% endblock %}
+
+{% block head_extra %}
+<style>
+  /* ---------- Record & remember modal (scoped under #recordModal) ---------- */
+  #recordModal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(26, 26, 24, 0.55);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+  #recordModal.open { display: flex; }
+
+  #recordModal .rm-card {
+    background: var(--ivory);
+    width: 100%;
+    max-width: 880px;
+    max-height: 92vh;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(26, 26, 24, 0.3);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+  }
+
+  #recordModal .rm-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--sage);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 2;
+  }
+  #recordModal .rm-close:hover { color: var(--pine); }
+
+  #recordModal .rm-left {
+    padding: 30px 26px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border-right: 1px solid var(--line);
+  }
+
+  #recordModal .rm-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--sage);
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 12px;
+    margin-bottom: 18px;
+  }
+  #recordModal .rm-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--sage);
+  }
+  #recordModal[data-state="recording"] .rm-dot { background: var(--terracotta); animation: rmPulse 1.4s ease-out infinite; }
+  #recordModal[data-state="paused"] .rm-dot { background: #C7972E; }
+  #recordModal[data-state="summarizing"] .rm-dot { background: #3B6FB0; }
+  #recordModal[data-state="error"] .rm-dot { background: #B23B3B; }
+  @keyframes rmPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(46, 124, 110, 0.5); }
+    70%  { box-shadow: 0 0 0 8px rgba(46, 124, 110, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(46, 124, 110, 0); }
+  }
+
+  #recordModal .rm-orb {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--terracotta);
+    box-shadow: 0 8px 24px rgba(46, 124, 110, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 6px 0 18px;
+    transition: background 0.2s ease;
+  }
+  #recordModal .rm-orb svg { width: 46px; height: 46px; }
+  #recordModal[data-state="paused"] .rm-orb { background: #C7972E; box-shadow: 0 8px 24px rgba(199, 151, 46, 0.35); }
+  #recordModal[data-state="summarizing"] .rm-orb { background: #3B6FB0; box-shadow: 0 8px 24px rgba(59, 111, 176, 0.35); }
+  #recordModal[data-state="error"] .rm-orb { background: var(--sage); box-shadow: none; }
+
+  #recordModal .rm-timer {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 2rem;
+    color: var(--pine);
+    letter-spacing: 0.02em;
+    margin-bottom: 18px;
+  }
+
+  #recordModal .rm-lang {
+    margin-bottom: 16px;
+    width: 100%;
+    max-width: 260px;
+  }
+  #recordModal .rm-lang label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--sage);
+    text-align: left;
+    margin-bottom: 5px;
+  }
+  #recordModal .rm-lang select {
+    width: 100%;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.92rem;
+    color: var(--ink);
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 9px 12px;
+    cursor: pointer;
+  }
+  #recordModal .rm-lang select:focus-visible {
+    outline: 2px solid var(--pine);
+    outline-offset: 1px;
+  }
+
+  #recordModal .rm-controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  #recordModal .rm-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 11px 18px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.15s ease, opacity 0.15s ease;
+  }
+  #recordModal .rm-btn:active { transform: translateY(1px); }
+  #recordModal .rm-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+  #recordModal .rm-btn.primary { background: var(--terracotta); color: var(--white); }
+  #recordModal .rm-btn.primary:hover:not([disabled]) { background: var(--terracotta-deep); }
+  #recordModal .rm-btn.ghost { background: var(--white); color: var(--pine); border: 1px solid var(--line); }
+  #recordModal .rm-btn.ghost:hover:not([disabled]) { border-color: var(--pine); }
+
+  #recordModal .rm-consent {
+    margin-top: 22px;
+    font-size: 0.82rem;
+    color: var(--sage);
+    background: rgba(199, 151, 46, 0.12);
+    border: 1px solid rgba(199, 151, 46, 0.3);
+    border-radius: 12px;
+    padding: 12px 14px;
+    line-height: 1.4;
+  }
+
+  #recordModal .rm-right {
+    padding: 28px 26px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  #recordModal .rm-right h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  #recordModal .rm-wordcount {
+    font-size: 0.82rem;
+    color: var(--sage);
+    margin-bottom: 12px;
+  }
+  #recordModal .rm-transcript {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 1rem;
+    color: var(--ink);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    min-height: 160px;
+  }
+  #recordModal .rm-transcript .rm-placeholder { color: var(--sage); }
+
+  #recordModal .rm-summary {
+    margin-top: 14px;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+    display: none;
+  }
+  #recordModal .rm-summary.show { display: block; }
+  #recordModal .rm-summary h2 { margin-bottom: 8px; }
+  #recordModal .rm-summary-body {
+    font-size: 0.98rem;
+    color: var(--ink);
+    line-height: 1.55;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  #recordModal .rm-summary-body .rm-h {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--pine);
+    margin: 14px 0 5px;
+  }
+  #recordModal .rm-summary-body .rm-h:first-child { margin-top: 0; }
+  #recordModal .rm-summary-body ul {
+    margin: 0 0 6px 1.1rem;
+    padding: 0;
+  }
+  #recordModal .rm-summary-body li { margin-bottom: 4px; }
+  #recordModal .rm-summary-body p { margin: 0 0 8px; }
+  #recordModal .rm-summary-body strong { color: var(--pine); }
+  #recordModal .rm-summary-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--sage);
+    font-size: 0.95rem;
+  }
+  #recordModal .rm-spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    border-top-color: var(--terracotta);
+    animation: rmSpin 0.8s linear infinite;
+  }
+  @keyframes rmSpin { to { transform: rotate(360deg); } }
+
+  #recordModal .rm-disclaimer {
+    margin-top: 12px;
+    font-size: 0.78rem;
+    color: var(--sage);
+  }
+
+  @media (max-width: 720px) {
+    #recordModal .rm-card { grid-template-columns: 1fr; max-height: 94vh; overflow-y: auto; }
+    #recordModal .rm-left { border-right: none; border-bottom: 1px solid var(--line); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #recordModal[data-state="recording"] .rm-dot { animation: none; }
+    #recordModal .rm-spinner { animation: none; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <main>
+    <section class="hero wrap">
+      <h1>Recording your visit?</h1>
+      <p>Press record now. We'll explain everything afterward, in your language.</p>
+    </section>
+
+    <section class="record-area">
+      <button class="record-btn" id="recordTrigger" aria-label="Start recording your visit">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="9" y="2" width="6" height="12" rx="3" fill="white"/>
+          <path d="M5 11a7 7 0 0014 0" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M12 18v3" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="record-label">Press to record</div>
+      <div class="record-sub">Press it now, before your doctor starts talking.</div>
+    </section>
+
+    <section class="steps wrap">
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-mark">1</div>
+          <div>
+            <h3>Keep recording through the visit</h3>
+            <p>Leave it running. You don't need to do anything else while your doctor talks.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-mark">2</div>
+          <div>
+            <h3>Get a plain explanation</h3>
+            <p>We turn the recording into a simple summary, in the language you're most comfortable with.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-mark">3</div>
+          <div>
+            <h3>Know what to ask next</h3>
+            <p>We give you the questions worth bringing to your next visit, so nothing gets missed.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="reassure wrap">
+      <p>"You don't need to know how this works. Just press record."</p>
+    </section>
+
+    <section class="trust wrap">
+      <p>Explanations are grounded in trusted medical sources, including <strong>Mayo Clinic</strong>, <strong>Johns Hopkins</strong>, and <strong>Cleveland Clinic</strong>.</p>
+    </section>
+  </main>
+
+  <!-- ---------- Record & remember modal ---------- -->
+  <div id="recordModal" data-state="idle" role="dialog" aria-modal="true" aria-label="Record your visit">
+    <div class="rm-card">
+      <button class="rm-close" id="rmClose" type="button" aria-label="Close recorder">&times;</button>
+
+      <div class="rm-left">
+        <div class="rm-status" id="rmStatus">
+          <span class="rm-dot"></span>
+          <span id="rmStatusText">Getting ready…</span>
+        </div>
+
+        <div class="rm-orb" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="9" y="2" width="6" height="12" rx="3" fill="white"/>
+            <path d="M5 11a7 7 0 0014 0" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M12 18v3" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div class="rm-timer" id="rmTimer">00:00</div>
+
+        <div class="rm-lang">
+          <label for="rmLang">Visit language</label>
+          <select id="rmLang">
+            <option value="auto" selected>Auto-detect</option>
+            <option value="en">English</option>
+            <option value="es">Spanish · Español</option>
+            <option value="zh">Chinese · 中文</option>
+            <option value="hi">Hindi · हिन्दी</option>
+            <option value="ar">Arabic · العربية</option>
+            <option value="fr">French · Français</option>
+            <option value="pt">Portuguese · Português</option>
+            <option value="ru">Russian · Русский</option>
+            <option value="vi">Vietnamese · Tiếng Việt</option>
+            <option value="ko">Korean · 한국어</option>
+            <option value="tl">Tagalog</option>
+            <option value="de">German · Deutsch</option>
+            <option value="ja">Japanese · 日本語</option>
+          </select>
+        </div>
+
+        <div class="rm-controls">
+          <button class="rm-btn ghost" id="rmPause" type="button">Pause</button>
+          <button class="rm-btn primary" id="rmStop" type="button">Stop &amp; summarize</button>
+          <button class="rm-btn ghost" id="rmDiscard" type="button">Discard</button>
+        </div>
+
+        <div class="rm-consent">
+          Everyone in the room should agree to be recorded. Aira helps you remember your
+          visit — it doesn't store your audio long-term.
+        </div>
+      </div>
+
+      <div class="rm-right">
+        <h2>Live transcript</h2>
+        <div class="rm-wordcount" id="rmWordCount">0 words</div>
+        <div class="rm-transcript" id="rmTranscript" aria-live="polite">
+          <span class="rm-placeholder">Your words will appear here as you speak…</span>
+        </div>
+
+        <div class="rm-summary" id="rmSummary">
+          <h2>Visit summary</h2>
+          <div class="rm-summary-body" id="rmSummaryBody"></div>
+        </div>
+
+        <div class="rm-disclaimer">
+          This summary is a memory aid, not medical advice. Always follow your care team's instructions.
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  "use strict";
+
+  var SEGMENT_MS = 3500;       // length of each chunk sent to Whisper (shorter = more live)
+  var MIN_BLOB_BYTES = 1400;   // skip near-empty segments
+  var SILENCE_RMS = 0.018;     // below this, a chunk is treated as silence (skip it)
+  var TRANSCRIBE_URL = "{% url 'voice_transcribe' %}";
+  var SUMMARIZE_URL = "{% url 'visit_summarize' %}";
+
+  var rec = {
+    stream: null, mr: null, mime: "", format: "webm",
+    open: false, recording: false, paused: false,
+    seq: 0, segments: {}, transcript: "", language: "auto",
+    pendingXhr: 0, segTimer: null, tickTimer: null,
+    startedAt: 0, elapsedMs: 0, summarizing: false, drainPoll: null,
+    audioCtx: null, analyser: null, meterData: null
+  };
+
+  // --- DOM ---
+  var $modal, $statusText, $timer, $pause, $stop, $discard,
+      $transcript, $wordCount, $summary, $summaryBody, $lang;
+
+  function $(id) { return document.getElementById(id); }
+
+  function setState(state, text) {
+    if ($modal) $modal.setAttribute("data-state", state);
+    if (text != null && $statusText) $statusText.textContent = text;
+  }
+
+  // --- MIME selection ---
+  function pickMime() {
+    var candidates = [
+      "audio/webm;codecs=opus", "audio/webm",
+      "audio/ogg;codecs=opus", "audio/mp4", "audio/mpeg", ""
+    ];
+    var supported = "";
+    if (window.MediaRecorder && MediaRecorder.isTypeSupported) {
+      for (var i = 0; i < candidates.length; i++) {
+        if (candidates[i] === "" || MediaRecorder.isTypeSupported(candidates[i])) {
+          supported = candidates[i];
+          break;
+        }
+      }
+    }
+    rec.mime = supported;
+    if (supported.indexOf("webm") !== -1) rec.format = "webm";
+    else if (supported.indexOf("ogg") !== -1) rec.format = "ogg";
+    else if (supported.indexOf("mp4") !== -1) rec.format = "m4a";
+    else if (supported.indexOf("mpeg") !== -1) rec.format = "mp3";
+    else rec.format = "webm";
+  }
+
+  // --- voice activity (skip silent chunks so Whisper can't hallucinate) ---
+  function setupMeter(stream) {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      rec.audioCtx = new Ctx();
+      if (rec.audioCtx.resume) rec.audioCtx.resume();
+      var src = rec.audioCtx.createMediaStreamSource(stream);
+      rec.analyser = rec.audioCtx.createAnalyser();
+      rec.analyser.fftSize = 2048;
+      rec.meterData = new Uint8Array(rec.analyser.fftSize);
+      src.connect(rec.analyser);
+    } catch (e) {
+      rec.analyser = null;  // if metering fails, we just send every chunk
+    }
+  }
+
+  function currentLevel() {
+    if (!rec.analyser) return 1;  // no meter → assume speech (never block)
+    rec.analyser.getByteTimeDomainData(rec.meterData);
+    var sum = 0;
+    for (var i = 0; i < rec.meterData.length; i++) {
+      var v = (rec.meterData[i] - 128) / 128;
+      sum += v * v;
+    }
+    return Math.sqrt(sum / rec.meterData.length);  // RMS, 0..1
+  }
+
+  function closeMeter() {
+    if (rec.audioCtx) {
+      try { rec.audioCtx.close(); } catch (e) {}
+    }
+    rec.audioCtx = null;
+    rec.analyser = null;
+    rec.meterData = null;
+  }
+
+  // --- open / reset ---
+  function openRecordModal() {
+    if (!window.MediaRecorder || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Recording is not available in this browser.");
+      return;
+    }
+    $modal.classList.add("open");
+    rec.open = true;
+    resetState();
+    startRecording();
+  }
+
+  function resetState() {
+    rec.recording = false;
+    rec.paused = false;
+    rec.seq = 0;
+    rec.segments = {};
+    rec.transcript = "";
+    rec.pendingXhr = 0;
+    rec.elapsedMs = 0;
+    rec.startedAt = 0;
+    rec.summarizing = false;
+    if (rec.segTimer) { clearTimeout(rec.segTimer); rec.segTimer = null; }
+    if (rec.tickTimer) { clearInterval(rec.tickTimer); rec.tickTimer = null; }
+    if (rec.drainPoll) { clearTimeout(rec.drainPoll); rec.drainPoll = null; }
+
+    $timer.textContent = "00:00";
+    $wordCount.textContent = "0 words";
+    $transcript.innerHTML = '<span class="rm-placeholder">Your words will appear here as you speak…</span>';
+    $summary.classList.remove("show");
+    $summaryBody.textContent = "";
+    $pause.textContent = "Pause";
+    $pause.disabled = false;
+    $stop.disabled = false;
+    setState("idle", "Getting ready…");
+  }
+
+  // --- recording lifecycle ---
+  function startRecording() {
+    navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+    }).then(function (stream) {
+      rec.stream = stream;
+      pickMime();
+      setupMeter(stream);
+      rec.language = ($lang && $lang.value) ? $lang.value : "auto";
+      rec.recording = true;
+      rec.startedAt = Date.now();
+      setState("recording", "Recording");
+      rec.tickTimer = setInterval(updateTimer, 1000);
+      startSegment();
+    }).catch(function (err) {
+      var msg = "Microphone access was blocked. Allow the mic and try again.";
+      if (err && (err.name === "NotFoundError" || err.name === "DevicesNotFoundError")) {
+        msg = "No microphone was found on this device.";
+      }
+      setState("error", msg);
+      $pause.disabled = true;
+      $stop.disabled = true;
+    });
+  }
+
+  function startSegment() {
+    if (!rec.stream) return;
+    var idx = rec.seq++;
+    var chunks = [];
+    var hadSpeech = false;
+    var mr;
+    try {
+      mr = rec.mime ? new MediaRecorder(rec.stream, { mimeType: rec.mime })
+                    : new MediaRecorder(rec.stream);
+    } catch (e) {
+      mr = new MediaRecorder(rec.stream);
+    }
+    rec.mr = mr;
+
+    // Sample the mic level a few times across the segment; if it never rises
+    // above the silence floor, the chunk is silence and we skip transcription
+    // (sending silence is what makes Whisper invent "visit www..." text).
+    var meterTimer = setInterval(function () {
+      if (currentLevel() > SILENCE_RMS) hadSpeech = true;
+    }, 120);
+
+    mr.ondataavailable = function (ev) {
+      if (ev.data && ev.data.size > 0) chunks.push(ev.data);
+    };
+    mr.onstop = function () {
+      clearInterval(meterTimer);
+      var blob = new Blob(chunks, { type: rec.mime || "audio/webm" });
+      if (blob.size > MIN_BLOB_BYTES && hadSpeech) {
+        transcribeBlob(blob, idx);
+      } else {
+        rec.segments[idx] = "";  // silence or empty → contributes nothing
+        renderTranscript();
+      }
+      if (rec.recording && !rec.paused) startSegment();
+    };
+
+    mr.start();
+    rec.segTimer = setTimeout(function () {
+      if (mr.state !== "inactive") mr.stop();
+    }, SEGMENT_MS);
+  }
+
+  // --- transcription ---
+  function blobToB64(blob) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onloadend = function () {
+        var s = String(reader.result || "");
+        var comma = s.indexOf(",");
+        resolve(comma >= 0 ? s.slice(comma + 1) : s);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  function transcribeBlob(blob, idx) {
+    rec.pendingXhr++;
+    blobToB64(blob).then(function (b64) {
+      return fetch(TRANSCRIBE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audio: b64, format: rec.format, language: rec.language })
+      });
+    }).then(function (resp) {
+      return resp.ok ? resp.json() : { text: "" };
+    }).then(function (data) {
+      rec.segments[idx] = (data && data.text) ? data.text : "";
+      renderTranscript();
+    }).catch(function () {
+      rec.segments[idx] = "";
+      renderTranscript();
+    }).then(function () {
+      rec.pendingXhr--;
+      if (rec.summarizing) maybeFinishSummary();
+    });
+  }
+
+  // Join every segment that has come back, in recording (index) order.
+  // Segments still in flight are simply skipped, so a slow early chunk never
+  // blocks later words from appearing — and it drops into place once it lands.
+  function buildTranscript() {
+    var parts = [];
+    for (var i = 0; i < rec.seq; i++) {
+      var piece = rec.segments[i];
+      if (piece) parts.push(piece);
+    }
+    return parts.join(" ");
+  }
+
+  function renderTranscript() {
+    rec.transcript = buildTranscript();
+    var live = rec.recording && rec.pendingXhr > 0;
+
+    if (!rec.transcript) {
+      var msg = live ? "Listening…" : "Your words will appear here as you speak…";
+      $transcript.innerHTML = '<span class="rm-placeholder">' + msg + '</span>';
+      $wordCount.textContent = live ? "transcribing…" : "0 words";
+      return;
+    }
+
+    $transcript.textContent = rec.transcript + (live ? " …" : "");
+    var words = rec.transcript.trim().split(/\s+/).length;
+    $wordCount.textContent = words + (words === 1 ? " word" : " words") + (live ? " · transcribing…" : "");
+    $transcript.scrollTop = $transcript.scrollHeight;
+  }
+
+  // --- minimal, safe Markdown renderer for the summary ---
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function mdInline(s) {
+    return escapeHtml(s).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  }
+  function renderMarkdown(md) {
+    var lines = String(md).split(/\r?\n/);
+    var html = "";
+    var inList = false;
+    function closeList() { if (inList) { html += "</ul>"; inList = false; } }
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (!line) { closeList(); continue; }
+      var h = line.match(/^#{1,6}\s+(.*)$/);
+      if (h) { closeList(); html += '<h4 class="rm-h">' + mdInline(h[1]) + "</h4>"; continue; }
+      var b = line.match(/^[-*]\s+(.*)$/);
+      if (b) { if (!inList) { html += "<ul>"; inList = true; } html += "<li>" + mdInline(b[1]) + "</li>"; continue; }
+      closeList();
+      html += "<p>" + mdInline(line) + "</p>";
+    }
+    closeList();
+    return html;
+  }
+
+  // --- timer ---
+  function updateTimer() {
+    var ms = rec.elapsedMs + (rec.startedAt ? (Date.now() - rec.startedAt) : 0);
+    var total = Math.floor(ms / 1000);
+    var m = Math.floor(total / 60);
+    var s = total % 60;
+    $timer.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  // --- pause / resume ---
+  function recordTogglePause() {
+    if (!rec.recording) return;
+    if (!rec.paused) {
+      rec.paused = true;
+      if (rec.segTimer) { clearTimeout(rec.segTimer); rec.segTimer = null; }
+      if (rec.mr && rec.mr.state !== "inactive") rec.mr.stop();
+      rec.elapsedMs += rec.startedAt ? (Date.now() - rec.startedAt) : 0;
+      rec.startedAt = 0;
+      $pause.textContent = "Resume";
+      setState("paused", "Paused");
+    } else {
+      rec.paused = false;
+      rec.startedAt = Date.now();
+      $pause.textContent = "Pause";
+      setState("recording", "Recording");
+      startSegment();
+    }
+  }
+
+  // --- stop & summarize ---
+  function recordStopAndSummarize() {
+    if (!rec.recording) return;
+    rec.recording = false;
+    rec.paused = false;
+    if (rec.segTimer) { clearTimeout(rec.segTimer); rec.segTimer = null; }
+    if (rec.tickTimer) { clearInterval(rec.tickTimer); rec.tickTimer = null; }
+    if (rec.mr && rec.mr.state !== "inactive") rec.mr.stop();  // flush final blob
+    rec.summarizing = true;
+    $pause.disabled = true;
+    $stop.disabled = true;
+    setState("summarizing", "Finishing up…");
+    maybeFinishSummary();
+  }
+
+  function maybeFinishSummary() {
+    if (!rec.summarizing) return;
+    if (rec.pendingXhr > 0) {
+      if (rec.drainPoll) clearTimeout(rec.drainPoll);
+      rec.drainPoll = setTimeout(maybeFinishSummary, 600);
+      return;
+    }
+    renderTranscript();
+    deliverSummary();
+  }
+
+  function deliverSummary() {
+    rec.summarizing = false;
+    releaseMic();
+
+    var transcript = buildTranscript().trim();
+    rec.transcript = transcript;
+    var ts = Date.now();
+    try {
+      window.__nmLastVisit = { transcript: transcript, sessionId: "visit_" + ts, ts: ts };
+      localStorage.setItem("nm_last_visit_transcript", transcript);
+      localStorage.setItem("nm_last_visit_session", "visit_" + ts);
+      localStorage.setItem("nm_last_visit_ts", String(ts));
+    } catch (e) { /* localStorage may be unavailable */ }
+
+    if (!transcript) {
+      setState("error", "No speech was captured to summarize.");
+      return;
+    }
+
+    setState("summarizing", "Building your summary…");
+    $summary.classList.add("show");
+    $summaryBody.innerHTML = '<div class="rm-summary-loading"><span class="rm-spinner"></span> Building your visit summary…</div>';
+
+    fetch(SUMMARIZE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transcript: transcript })
+    }).then(function (resp) {
+      if (!resp.ok) throw new Error("summary_failed");
+      return resp.json();
+    }).then(function (data) {
+      if (data && data.summary) {
+        $summaryBody.innerHTML = renderMarkdown(data.summary);
+      } else {
+        $summaryBody.textContent = "No summary was returned.";
+      }
+      setState("idle", "Summary ready");
+    }).catch(function () {
+      $summaryBody.textContent = "We couldn't build the summary right now. Your transcript is saved — try again.";
+      setState("error", "Summary unavailable");
+    });
+  }
+
+  // --- teardown ---
+  function releaseMic() {
+    if (rec.stream) {
+      rec.stream.getTracks().forEach(function (t) { t.stop(); });
+      rec.stream = null;
+    }
+    rec.mr = null;
+    closeMeter();
+  }
+
+  function teardown(discard) {
+    rec.recording = false;
+    rec.paused = false;
+    rec.summarizing = false;
+    if (rec.segTimer) { clearTimeout(rec.segTimer); rec.segTimer = null; }
+    if (rec.tickTimer) { clearInterval(rec.tickTimer); rec.tickTimer = null; }
+    if (rec.drainPoll) { clearTimeout(rec.drainPoll); rec.drainPoll = null; }
+    if (rec.mr && rec.mr.state !== "inactive") {
+      try { rec.mr.stop(); } catch (e) {}
+    }
+    releaseMic();
+    if (discard) {
+      $modal.classList.remove("open");
+      rec.open = false;
+    }
+  }
+
+  function requestClose() {
+    if (rec.summarizing) return;  // don't interrupt an in-flight summary
+    teardown(true);
+  }
+
+  // --- wire up ---
+  document.addEventListener("DOMContentLoaded", function () {
+    $modal = $("recordModal");
+    if (!$modal) return;
+    $statusText = $("rmStatusText");
+    $timer = $("rmTimer");
+    $pause = $("rmPause");
+    $stop = $("rmStop");
+    $discard = $("rmDiscard");
+    $transcript = $("rmTranscript");
+    $wordCount = $("rmWordCount");
+    $summary = $("rmSummary");
+    $summaryBody = $("rmSummaryBody");
+    $lang = $("rmLang");
+
+    var trigger = $("recordTrigger");
+    if (trigger) trigger.addEventListener("click", openRecordModal);
+
+    $pause.addEventListener("click", recordTogglePause);
+    $stop.addEventListener("click", recordStopAndSummarize);
+    $discard.addEventListener("click", requestClose);
+    if ($lang) {
+      $lang.addEventListener("change", function () {
+        rec.language = $lang.value || "auto";  // applies to subsequent chunks
+      });
+    }
+    $("rmClose").addEventListener("click", requestClose);
+    $modal.addEventListener("click", function (ev) {
+      if (ev.target === $modal) requestClose();
+    });
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape" && rec.open) requestClose();
+    });
+  });
+})();
+</script>
+{% endblock %}

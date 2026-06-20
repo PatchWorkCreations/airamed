@@ -1,0 +1,75 @@
+{% extends "myApp/base.html" %}
+
+{% block title %}Privacy Policy — Aira{% endblock %}
+
+{% block content %}
+  <main class="page wrap">
+    <div class="page-eyebrow">Legal</div>
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: June 19, 2026 · Effective date: June 19, 2026</p>
+
+    <h2>1. Introduction</h2>
+    <p>This Privacy Policy explains how Aira, a product of i Rise Up, LLC ("Aira," "we," "us," or "our"), collects, uses, discloses, and protects information when you use our website and services (collectively, the "Service"). By using the Service, you agree to the practices described in this Policy.</p>
+    <p>Aira is designed to help patients understand and remember information from their healthcare visits. Because our Service involves health-related information, we take privacy and data protection seriously, and we describe our practices here as clearly as we can.</p>
+
+    <h2>2. Information We Collect</h2>
+    <p><strong>Information you provide directly:</strong></p>
+    <ul>
+      <li>Account information, such as your name, email address, and preferred language</li>
+      <li>Audio recordings of medical visits that you choose to record using the Service</li>
+      <li>Any notes, questions, or other content you enter into the Service</li>
+    </ul>
+    <p><strong>Information collected automatically:</strong></p>
+    <ul>
+      <li>Device and usage information, such as browser type, device type, and general usage patterns</li>
+      <li>Approximate location information (such as state or region), where relevant to providing the Service</li>
+    </ul>
+    <p>[Note for legal review: confirm whether any analytics, cookies, or third-party tracking tools are in use, and disclose specifically once finalized.]</p>
+
+    <h2>3. How We Use Your Information</h2>
+    <p>We use the information we collect to:</p>
+    <ul>
+      <li>Generate plain-language explanations of your recorded visit, in your preferred language</li>
+      <li>Generate suggested follow-up questions based on your visit</li>
+      <li>Operate, maintain, and improve the Service</li>
+      <li>Communicate with you about your account or the Service</li>
+      <li>Comply with legal obligations</li>
+    </ul>
+    <p>We do not use your health information for advertising purposes, and we do not sell your personal or health information to third parties.</p>
+
+    <h2>4. How We Handle Audio Recordings</h2>
+    <p>When you record a visit using Aira, your audio is processed in real time in order to generate your plain-language explanation and suggested questions. <strong>Aira does not retain a long-term copy of the raw audio recording</strong> once processing is complete. The text-based explanation and questions generated from your visit may be retained in your account so that you can refer back to them.</p>
+    <p>[Note for legal review: confirm exact technical retention window for audio during processing (e.g., immediately discarded vs. held briefly in a processing queue), and disclose precisely once confirmed by engineering.]</p>
+
+    <h2>5. Your Responsibility When Recording</h2>
+    <p>Recording laws vary by state and country. In some places, all parties to a conversation must be aware that it is being recorded. <strong>You are responsible for complying with the recording consent laws that apply to you</strong>, including informing your healthcare provider that you are recording the visit where required. Aira provides the tool to record; the decision to record, and compliance with applicable law, is yours. See our <a href="{% url 'terms' %}">Terms of Service</a> for additional detail.</p>
+
+    <h2>6. How We Share Information</h2>
+    <p>We do not sell your personal or health information. We may share information in the following limited circumstances:</p>
+    <ul>
+      <li>With service providers who help us operate the Service (such as cloud hosting or language-processing providers), under contractual obligations to protect your information</li>
+      <li>If you are accessing Aira through a healthcare provider or health system partnership, with that partner as needed to provide the Service, consistent with any applicable agreement</li>
+      <li>To comply with legal obligations, such as a valid subpoena or court order</li>
+      <li>To protect the safety of any person, where we believe in good faith that disclosure is necessary</li>
+    </ul>
+
+    <h2>7. Data Security</h2>
+    <p>We use industry-standard safeguards, including encryption in transit, to protect your information. We are working toward independent SOC 2 Type II audit certification to provide additional, third-party-verified assurance of our security practices. No system can guarantee absolute security, and we encourage you to use strong, unique passwords and to contact us if you suspect unauthorized access to your account.</p>
+
+    <h2>8. Your Rights and Choices</h2>
+    <p>Depending on where you live, you may have rights to access, correct, delete, or limit the use of your personal information. To exercise these rights, contact us at <a href="mailto:privacy@airamed.org">privacy@airamed.org</a>. We will respond in accordance with applicable law.</p>
+    <p>[Note for legal review: confirm specific state law obligations that apply, e.g., CCPA/CPRA for California residents, and add jurisdiction-specific language as needed.]</p>
+
+    <h2>9. Children's Privacy</h2>
+    <p>Aira is not intended for use by children under 18 without the involvement of a parent or legal guardian. We do not knowingly collect information from children in violation of applicable law.</p>
+
+    <h2>10. International Users</h2>
+    <p>If you access Aira from outside the United States, your information may be processed in the United States, where data protection laws may differ from those in your country.</p>
+
+    <h2>11. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We will post the updated policy here with a new "Last updated" date. Material changes will be communicated through the Service or by email where appropriate.</p>
+
+    <h2>12. Contact Us</h2>
+    <p>If you have questions about this Privacy Policy, please contact us at <a href="mailto:privacy@airamed.org">privacy@airamed.org</a>.</p>
+  </main>
+{% endblock %}

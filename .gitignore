@@ -1,0 +1,22 @@
+# Environment / secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+myenv/
+env/
+
+# Django
+db.sqlite3
+*.log
+staticfiles/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

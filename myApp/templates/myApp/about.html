@@ -1,0 +1,28 @@
+{% extends "myApp/base.html" %}
+
+{% block title %}About — Aira{% endblock %}
+
+{% block content %}
+  <main class="page wrap">
+    <div class="page-eyebrow">About Aira</div>
+    <h1>Until every patient understands.</h1>
+    <p class="updated">Why we built this, and who it's for.</p>
+
+    <h2>Where this started</h2>
+    <p>Aira began with a simple, painful problem: walking out of a doctor's appointment and not remembering what was actually said. For anyone who has spent years caring for a parent, a spouse, or a loved one through a difficult diagnosis, this moment is familiar. Important instructions get missed. Medical language gets lost in translation, literally and figuratively. And the questions you meant to ask never get asked.</p>
+    <p>Aira was built to close that gap — quietly, simply, and without adding one more complicated app to learn.</p>
+
+    <h2>What we believe</h2>
+    <p>Healthcare information should be understandable to the person it's about, not just the person delivering it. That means plain language. It means your own language, whatever that is. And it means giving you the right questions to bring back, so nothing important gets left behind.</p>
+
+    <h2>How it works, simply</h2>
+    <p>You record your visit. We turn it into a plain-language explanation in the language you're most comfortable with. Then we help you prepare the questions worth asking next time. That's the whole idea — nothing more complicated than that.</p>
+
+    <h2>Who's behind it</h2>
+    <p>Aira is built by a team with deep personal experience in caregiving, combined with clinical oversight from physicians who understand both the promise and the limits of technology in a doctor's office. Our explanations are grounded in trusted, established medical sources — never invented, never guessed.</p>
+
+    <div class="callout">
+      <p><strong>For healthcare providers and partners:</strong> if you'd like to learn more about Aira's clinical approach, our care team, or partnership opportunities with health systems, please visit our <a href="{% url 'contact' %}">contact page</a>.</p>
+    </div>
+  </main>
+{% endblock %}
