@@ -103,18 +103,16 @@
     transform-origin: center center;
     will-change: transform;
   }
-  #recordModal[data-state="recording"] .rm-orb img {
-    animation: rmHeartbeat 0.88s ease-in-out infinite;
-  }
+  #recordModal[data-state="recording"] .rm-orb img,
   #recordModal[data-state="summarizing"] .rm-orb img {
-    animation: rmHeartbeat 1.05s ease-in-out infinite;
+    animation: rmHeartbeat 1.65s ease-in-out infinite;
   }
   @keyframes rmHeartbeat {
-    0%, 100% { transform: scale(1); filter: drop-shadow(0 2px 8px rgba(46, 124, 110, 0.15)); }
-    8%        { transform: scale(1.16); filter: drop-shadow(0 0 20px rgba(46, 124, 110, 0.6)); }
-    16%       { transform: scale(1); filter: drop-shadow(0 2px 8px rgba(46, 124, 110, 0.15)); }
-    24%       { transform: scale(1.1); filter: drop-shadow(0 0 14px rgba(59, 111, 176, 0.5)); }
-    32%       { transform: scale(1); filter: drop-shadow(0 2px 8px rgba(46, 124, 110, 0.15)); }
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 4px 10px rgba(33, 80, 120, 0.1)); }
+    6%        { transform: scale(1.07); filter: drop-shadow(0 0 14px rgba(46, 140, 190, 0.32)); }
+    12%       { transform: scale(1); filter: drop-shadow(0 4px 10px rgba(33, 80, 120, 0.1)); }
+    18%       { transform: scale(1.04); filter: drop-shadow(0 0 10px rgba(46, 124, 110, 0.25)); }
+    24%       { transform: scale(1); filter: drop-shadow(0 4px 10px rgba(33, 80, 120, 0.1)); }
   }
 
   #recordModal .rm-timer {
@@ -356,7 +354,7 @@
 
         <div class="rm-orb" id="rmOrb" aria-hidden="true">
           <img
-            src="https://res.cloudinary.com/dk52yeq9x/image/upload/v1778844684/playstore-removebg-preview_ewayj1.png"
+            src="https://res.cloudinary.com/dw5tnpylt/image/upload/v1781974335/Aira_Logo-03_a7ts2s.png"
             alt=""
             width="100"
             height="100"

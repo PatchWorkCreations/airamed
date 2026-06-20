@@ -1,11 +1,14 @@
 import json
 
+from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from . import voice_ai
+from .contact_email import ContactEmailError, send_contact_email
+from .forms import ContactForm
 
 
 def home(request):
@@ -29,7 +32,28 @@ def terms(request):
 
 
 def contact(request):
-    return render(request, 'myApp/contact.html', {'active': 'contact'})
+    sent = False
+    form = ContactForm()
+
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            try:
+                send_contact_email(form.cleaned_data)
+            except ContactEmailError:
+                messages.error(
+                    request,
+                    'We couldn\'t send your message right now. Please try again in a few minutes.',
+                )
+            else:
+                sent = True
+                form = ContactForm()
+
+    return render(request, 'myApp/contact.html', {
+        'active': 'contact',
+        'form': form,
+        'sent': sent,
+    })
 
 
 # --- "Record & remember" API ------------------------------------------------

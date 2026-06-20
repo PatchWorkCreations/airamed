@@ -26,6 +26,15 @@ OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 OPENAI_TRANSCRIBE_MODEL = os.environ.get('OPENAI_TRANSCRIBE_MODEL', 'whisper-1')
 OPENAI_SUMMARY_MODEL = os.environ.get('OPENAI_SUMMARY_MODEL', 'gpt-4o')
 
+# Contact form (Resend)
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+CONTACT_ADMIN_EMAIL = os.environ.get('CONTACT_ADMIN_EMAIL', 'support@airamed.org')
+RESEND_FROM_EMAIL = (
+    os.environ.get('RESEND_FROM_EMAIL')
+    or os.environ.get('RESEND_FROM')
+    or 'Aira Contact <contact@airamed.org>'
+).strip().strip('"').strip("'")
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
