@@ -62,8 +62,8 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: rgba(46, 124, 110, 0.12);
-    color: var(--terracotta);
+    background: rgba(var(--teal-rgb), 0.12);
+    color: var(--teal);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -87,7 +87,7 @@
     border: 1px solid var(--line);
     border-radius: 22px;
     padding: 28px 26px 30px;
-    box-shadow: 0 18px 48px rgba(31, 78, 71, 0.08);
+    box-shadow: 0 18px 48px rgba(var(--navy-rgb), 0.08);
   }
 
   .contact-card h2 {
@@ -127,8 +127,8 @@
     height: 56px;
     margin: 0 auto 18px;
     border-radius: 50%;
-    background: rgba(46, 124, 110, 0.12);
-    color: var(--terracotta);
+    background: rgba(var(--teal-rgb), 0.12);
+    color: var(--teal);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -193,8 +193,8 @@
   .contact-field select:focus,
   .contact-field textarea:focus {
     outline: none;
-    border-color: rgba(46, 124, 110, 0.55);
-    box-shadow: 0 0 0 3px rgba(46, 124, 110, 0.12);
+    border-color: rgba(var(--teal-rgb), 0.55);
+    box-shadow: 0 0 0 3px rgba(var(--teal-rgb), 0.12);
     background: var(--white);
   }
 
@@ -222,18 +222,18 @@
     background: var(--terracotta);
     cursor: pointer;
     transition: transform 0.1s ease, background 0.15s ease, box-shadow 0.15s ease;
-    box-shadow: 0 8px 20px rgba(46, 124, 110, 0.28);
+    box-shadow: 0 8px 20px rgba(var(--navy-rgb), 0.22);
   }
 
   .contact-submit:hover {
-    background: var(--terracotta-deep);
-    box-shadow: 0 10px 24px rgba(46, 124, 110, 0.34);
+    background: var(--teal-deep);
+    box-shadow: 0 10px 24px rgba(var(--navy-rgb), 0.28);
   }
 
   .contact-submit:active { transform: translateY(1px); }
 
   .contact-submit:focus-visible {
-    outline: 2px solid var(--pine);
+    outline: 2px solid var(--navy);
     outline-offset: 3px;
   }
 
