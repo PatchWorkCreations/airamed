@@ -172,6 +172,26 @@
     margin-top: 3px;
   }
 
+  .story-bio-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--story-green);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(30, 122, 90, 0.35);
+    padding-bottom: 2px;
+    transition: color 0.18s, border-color 0.18s, gap 0.18s;
+  }
+  .story-bio-link:hover {
+    color: var(--story-navy);
+    border-bottom-color: var(--story-navy);
+    gap: 11px;
+  }
+  .story-bio-link i { font-size: 0.82rem; }
+
   .story-closing {
     text-align: center;
     padding: 72px 28px 80px;
@@ -296,6 +316,12 @@
         <div class="story-signoff">
           <div class="s-name">Dr. Atiq Rehman, MD, MBA, FACS</div>
           <div class="s-title">Chief Medical Officer, Aira</div>
+          <a
+            class="story-bio-link"
+            href="https://www.neuromedai.org/about/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Learn more about Dr. Rehman <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
         </div>
       </div>
     </div>
