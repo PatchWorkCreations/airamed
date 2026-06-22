@@ -477,6 +477,7 @@
         </button>
         <nav id="siteNav" class="site-nav">
           <a href="{% url 'about' %}" class="{% if active == 'about' %}active{% endif %}">About</a>
+          <a href="{% url 'our_story' %}" class="{% if active == 'our_story' %}active{% endif %}">Our Story</a>
           <a href="{% url 'faq' %}" class="{% if active == 'faq' %}active{% endif %}">FAQ</a>
           <a href="{% url 'privacy' %}" class="{% if active == 'privacy' %}active{% endif %}">Privacy</a>
           <a href="{% url 'terms' %}" class="{% if active == 'terms' %}active{% endif %}">Terms</a>
@@ -492,6 +493,7 @@
     <div class="wrap footer-row">
       <p>&copy; 2026 Aira. Until every patient understands.</p>
       <div class="footer-links">
+        <a href="{% url 'our_story' %}" class="footer-link">Our Story</a>
         <a href="{% url 'privacy' %}" class="footer-link">Privacy</a>
         <a href="{% url 'terms' %}" class="footer-link">Terms</a>
         <a href="{% url 'contact' %}" class="footer-link">Contact</a>

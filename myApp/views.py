@@ -19,6 +19,10 @@ def about(request):
     return render(request, 'myApp/about.html', {'active': 'about'})
 
 
+def our_story(request):
+    return render(request, 'myApp/our_story.html', {'active': 'our_story'})
+
+
 def faq(request):
     return render(request, 'myApp/faq.html', {'active': 'faq'})
 

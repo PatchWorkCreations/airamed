@@ -1,0 +1,310 @@
+{% extends "myApp/base.html" %}
+
+{% block title %}Our Story — The People Behind Aira{% endblock %}
+
+{% block head_extra %}
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+  .story-page {
+    --story-green: #1E7A5A;
+    --story-green-light: #2EA87A;
+    --story-green-pale: #EBF7F1;
+    --story-navy: #0C1E35;
+    --story-ink: #243446;
+    --story-ink-mid: #46586b;
+    --story-ink-soft: #6b7a8a;
+    --story-border: #E0E8F0;
+    --story-bg: #FAFCFF;
+    --story-bg-warm: #F5F8FC;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--story-ink);
+    line-height: 1.75;
+    margin: 0 -28px;
+  }
+  .story-page img { max-width: 100%; display: block; }
+
+  .story-hero {
+    background: linear-gradient(160deg, #0C1E35 0%, #112a47 60%, #0e2740 100%);
+    color: white;
+    text-align: center;
+    padding: 72px 28px 64px;
+  }
+  .story-hero .story-eyebrow { color: rgba(255,255,255,0.55); }
+  .story-hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.4rem, 5.4vw, 4.1rem);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: white;
+    margin: 14px 0 18px;
+    text-wrap: balance;
+  }
+  .story-hero p {
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: rgba(255,255,255,0.72);
+    font-weight: 300;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  .story-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--story-green);
+  }
+
+  .story-profile { border-bottom: 1px solid var(--story-border); }
+  .story-profile:nth-child(odd) { background: var(--story-bg); }
+  .story-profile:nth-child(even) { background: var(--story-bg-warm); }
+
+  .story-profile-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 72px 28px;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 56px;
+    align-items: start;
+  }
+  .story-profile.reverse .story-profile-inner { grid-template-columns: 1fr 300px; }
+  .story-profile.reverse .story-profile-photo { order: 2; }
+  .story-profile.reverse .story-profile-body { order: 1; }
+
+  .story-profile-photo { position: sticky; top: 88px; }
+  .story-photo-frame {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--story-border);
+    aspect-ratio: 4/5;
+    background: linear-gradient(145deg, #E8EEF5, #D4DDE8);
+    box-shadow: 0 18px 50px rgba(12,30,53,0.12);
+  }
+  .story-photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+  .story-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 16px;
+    padding: 9px 16px;
+    background: white;
+    border: 1px solid var(--story-border);
+    border-radius: 100px;
+    font-size: 0.82rem;
+    color: var(--story-navy);
+  }
+  .story-pill i { color: var(--story-green); }
+
+  .story-profile-body .story-eyebrow { display: block; margin-bottom: 10px; }
+  .story-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3.1rem);
+    font-weight: 500;
+    color: var(--story-navy);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+  }
+  .story-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--story-green);
+    margin: 8px 0 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--story-border);
+  }
+
+  .story-prose p {
+    font-size: 1.12rem;
+    font-weight: 300;
+    color: var(--story-ink-mid);
+    line-height: 1.85;
+    margin-bottom: 18px;
+  }
+  .story-prose p:last-child { margin-bottom: 0; }
+  .story-prose strong { color: var(--story-navy); font-weight: 500; }
+  .story-prose em { color: var(--story-navy); font-style: italic; }
+
+  .story-lede {
+    font-size: 1.35rem !important;
+    color: var(--story-navy) !important;
+    font-weight: 400 !important;
+    line-height: 1.55 !important;
+  }
+
+  .story-tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.65rem;
+    font-style: italic;
+    font-weight: 500;
+    color: var(--story-green);
+    line-height: 1.4;
+    margin: 28px 0;
+    padding: 20px 24px;
+    background: var(--story-green-pale);
+    border-left: 2px solid var(--story-green);
+    border-radius: 0 12px 12px 0;
+  }
+
+  .story-signoff {
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid var(--story-border);
+  }
+  .story-signoff .s-name { font-size: 1.05rem; font-weight: 500; color: var(--story-navy); }
+  .story-signoff .s-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--story-ink-soft);
+    margin-top: 3px;
+  }
+
+  .story-closing {
+    text-align: center;
+    padding: 72px 28px 80px;
+    background: var(--story-bg);
+  }
+  .story-closing h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.85rem, 4vw, 2.85rem);
+    font-weight: 500;
+    color: var(--story-navy);
+    line-height: 1.1;
+    margin-bottom: 22px;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .story-btn-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    background: var(--story-navy);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 100px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    box-shadow: 0 8px 26px rgba(12,30,53,0.2);
+  }
+  .story-btn-cta:hover {
+    background: var(--story-green);
+    color: white;
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 900px) {
+    .story-profile-inner,
+    .story-profile.reverse .story-profile-inner {
+      grid-template-columns: 1fr;
+      gap: 32px;
+      padding: 56px 24px;
+    }
+    .story-profile.reverse .story-profile-photo,
+    .story-profile.reverse .story-profile-body { order: 0; }
+    .story-profile-photo { position: static; max-width: 300px; }
+    .story-page { margin: 0 -24px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="story-page">
+
+  <section class="story-hero">
+    <span class="story-eyebrow">Our Story</span>
+    <h1>The People Behind Aira</h1>
+    <p>A caregiver and a cardiovascular surgeon — building the tool they both wished had existed.</p>
+  </section>
+
+  <section class="story-profile" id="founder">
+    <div class="story-profile-inner">
+      <div class="story-profile-photo">
+        <div class="story-photo-frame">
+          <img src="https://res.cloudinary.com/dw5tnpylt/image/upload/v1774394154/WhatsApp_Image_2026-03-24_at_10.22.15_PM_ibfqyg.jpg" alt="Maria Gregory, Founder &amp; CEO of Aira">
+        </div>
+        <span class="story-pill"><i class="fa-solid fa-heart" aria-hidden="true"></i> Founder &amp; CEO</span>
+      </div>
+      <div class="story-profile-body">
+        <span class="story-eyebrow">Our Founder's Story</span>
+        <h2 class="story-name">Maria Gregory</h2>
+        <p class="story-title">Founder &amp; CEO, Aira</p>
+
+        <div class="story-prose">
+          <p class="story-lede">Sixteen years ago, my husband became sick.</p>
+          <p>We've seen specialists, traveled to appointments, and collected thousands of pages of medical records — lab results, imaging reports, discharge summaries, physician notes. After sixteen years, we still don't have all the answers.</p>
+          <p>What surprised me most wasn't how complicated medicine was. It was how difficult it was to understand. Every appointment ended with more paperwork, more terminology, more abbreviations, more questions. I would sit at the kitchen table late at night trying to make sense of lab reports and medical notes written for clinicians, not patients.</p>
+          <p>I wasn't a physician. I was a wife trying to help someone she loved.</p>
+          <p>Over time, I learned how to read bloodwork, how to organize medical records, how to prepare for appointments and ask better questions. But I often wondered: <em>why does understanding your own healthcare have to be this hard?</em></p>
+          <p>Then new technology arrived. While many people were talking about what it could do for hospitals, physicians, and researchers, I kept thinking about patients. What if someone could leave a doctor's appointment and actually understand what was said? What if medical language could be translated into plain language? What if patients knew what questions to ask next — and caregivers didn't have to navigate complex medical information alone?</p>
+          <p>That idea became Aira.</p>
+          <p>Aira is not designed to replace physicians. <strong>Aira is designed to help patients understand them.</strong> Simply press record during your visit. Aira listens to the conversation, creates a clear summary, explains important medical information in plain language, and helps identify questions worth discussing with your healthcare team.</p>
+          <p>That's it. Simple — because healthcare is already complicated enough.</p>
+          <p>I built Aira because I spent sixteen years wishing something like it existed for my family. If you've ever left a medical appointment confused, overwhelmed, or unsure what happened next, you're not alone. I've been there. And that's why Aira exists — not because technology needed another product, but because <strong>patients deserve to understand their own healthcare.</strong></p>
+        </div>
+
+        <p class="story-tagline">"Until every patient understands."</p>
+
+        <div class="story-signoff">
+          <div class="s-name">Maria Gregory</div>
+          <div class="s-title">Founder &amp; CEO, Aira</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="story-profile reverse" id="clinical-leadership">
+    <div class="story-profile-inner">
+      <div class="story-profile-photo">
+        <div class="story-photo-frame">
+          <img src="https://res.cloudinary.com/dw5tnpylt/image/upload/v1781863205/atiq_pe1xe8.jpg" alt="Dr. Atiq Rehman, Chief Medical Officer of Aira">
+        </div>
+        <span class="story-pill"><i class="fa-solid fa-stethoscope" aria-hidden="true"></i> Chief Medical Officer</span>
+      </div>
+      <div class="story-profile-body">
+        <span class="story-eyebrow">Our Clinical Leadership</span>
+        <h2 class="story-name">Dr. Atiq Rehman</h2>
+        <p class="story-title">MD, MBA, FACS — Chief Medical Officer</p>
+
+        <div class="story-prose">
+          <p class="story-lede">I've spent more than twenty-four years in operating rooms, boardrooms, and everywhere in between.</p>
+          <p>As a cardiovascular surgeon, a healthcare executive, and, more often than I expected, as someone trying to bring new technology into systems that weren't built for change.</p>
+          <p>Early in my career, I helped establish Pakistan's first minimally invasive cardiac surgery program and performed the country's first transcatheter aortic valve replacement. Later, I trained physicians at nearly ninety structural heart programs across the United States and advised medical technology companies developing the next generation of cardiovascular devices. Every one of those efforts taught me the same lesson: the hardest part of innovation in healthcare is rarely the technology itself. It's getting that technology into the hands of the people who need it, in a form they can actually use.</p>
+          <p>For most of my career, the people I focused on bridging that gap for were physicians and health systems. Patients were part of the equation, but not always the center of it.</p>
+          <p><strong>Aira changed that for me.</strong></p>
+          <p>When I first saw what the platform could do — listening to a patient's own appointment, translating it into language they could understand, helping them walk back into their next visit with the right questions — I recognized something I hadn't seen built with this kind of intention before. Not a tool for hospitals. Not a tool for clinicians. A tool for the patient sitting across the desk, trying to make sense of what they'd just been told.</p>
+          <p>That's why I joined as Chief Medical Officer.</p>
+          <p>My role is to make sure Aira holds up to the same clinical rigor I'd expect from any tool I'd put in front of my own patients — accurate, safe, and genuinely useful in the moment it matters most. I bring frontline surgical experience, executive leadership, and a career spent helping new technology earn its place in real clinical workflows. Maria brings the lived experience of a caregiver who spent sixteen years navigating exactly the problem we're solving.</p>
+          <p>That combination is rare. <strong>I don't think Aira works without both.</strong></p>
+        </div>
+
+        <div class="story-signoff">
+          <div class="s-name">Dr. Atiq Rehman, MD, MBA, FACS</div>
+          <div class="s-title">Chief Medical Officer, Aira</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="story-closing">
+    <h2>Built for the patient sitting across the desk.</h2>
+    <a class="story-btn-cta" href="{% url 'home' %}">Press record on your next visit</a>
+  </section>
+
+</div>
+{% endblock %}
