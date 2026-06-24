@@ -62,11 +62,19 @@
     padding: 28px 0 0;
     z-index: 200;
   }
+  .header-wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
   .header-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 14px;
+  }
+  @media (max-width: 720px) {
+    .header-wrap { padding: 0 24px; }
   }
   .brand {
     display: inline-flex;
@@ -303,7 +311,7 @@
 <body>
 
   <header id="siteHeader">
-    <div class="wrap header-row">
+    <div class="header-wrap header-row">
       <a href="{% url 'home' %}" class="brand" aria-label="Aira — home">
         <img src="https://res.cloudinary.com/dw5tnpylt/image/upload/v1781974560/Aira_Logo-05_aqtxuj.png" alt="Aira" class="brand-logo">
       </a>
