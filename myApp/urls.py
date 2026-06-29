@@ -14,4 +14,5 @@ urlpatterns = [
     # "Record & remember" API
     path('api/voice/transcribe/', views.voice_transcribe, name='voice_transcribe'),
     path('api/visit/summarize/', views.visit_summarize, name='visit_summarize'),
+    path('api/visit/email-summary/', views.visit_email_summary, name='visit_email_summary'),
 ]

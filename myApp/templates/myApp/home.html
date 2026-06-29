@@ -565,6 +565,7 @@
     box-shadow: 0 24px 60px rgba(26, 26, 24, 0.3);
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: minmax(0, 92vh);
     position: relative;
   }
 
@@ -748,6 +749,7 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
+    overflow-y: auto;
   }
   #recordModal .rm-right h2 {
     font-family: 'Fraunces', serif;
@@ -824,8 +826,6 @@
     font-size: 0.98rem;
     color: var(--ink);
     line-height: 1.55;
-    max-height: 240px;
-    overflow-y: auto;
   }
   #recordModal .rm-summary-body .rm-h {
     font-family: 'Fraunces', serif;
@@ -864,6 +864,118 @@
     margin-top: 12px;
     font-size: 0.78rem;
     color: var(--sage);
+  }
+
+  #recordModal .rm-email-actions {
+    margin-top: 14px;
+    display: none;
+  }
+  #recordModal .rm-email-actions.show { display: block; }
+
+  /* ─── EMAIL SUMMARY MODAL ───────────────────────────────────── */
+  #emailModal {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(26, 26, 24, 0.55);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+  #emailModal.open { display: flex; }
+
+  #emailModal .em-card {
+    background: var(--ivory);
+    width: 100%;
+    max-width: 440px;
+    border-radius: 18px;
+    box-shadow: 0 24px 60px rgba(26, 26, 24, 0.3);
+    padding: 28px 26px;
+    position: relative;
+  }
+  #emailModal .em-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--sage);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  #emailModal .em-close:hover { color: var(--pine); }
+  #emailModal h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--pine);
+    margin-bottom: 6px;
+  }
+  #emailModal p.em-intro {
+    font-size: 0.9rem;
+    color: var(--sage);
+    margin-bottom: 16px;
+    line-height: 1.45;
+  }
+  #emailModal .em-input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: var(--white);
+    margin-bottom: 14px;
+  }
+  #emailModal .em-input:focus-visible {
+    outline: none;
+    border-color: var(--pine);
+  }
+  #emailModal .em-controls {
+    display: flex;
+    gap: 10px;
+  }
+  #emailModal .em-btn {
+    flex: 1;
+    border: none;
+    border-radius: 12px;
+    padding: 11px 16px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  #emailModal .em-btn:active { transform: translateY(1px); }
+  #emailModal .em-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+  #emailModal .em-btn.primary { background: var(--terracotta); color: var(--white); }
+  #emailModal .em-btn.primary:hover:not([disabled]) { background: var(--terracotta-deep); }
+  #emailModal .em-btn.ghost { background: var(--white); color: var(--pine); border: 1px solid var(--line); }
+  #emailModal .em-btn.ghost:hover:not([disabled]) { border-color: var(--pine); }
+  #emailModal .em-status {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--sage);
+    min-height: 1.1em;
+  }
+  #emailModal .em-status.error { color: #B23B3B; }
+  #emailModal .em-status.success { color: var(--pine); }
+  #emailModal .em-status .rm-spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    border-top-color: var(--terracotta);
+    animation: rmSpin 0.8s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
   }
 
   /* ─── RESPONSIVE ─────────────────────────────────────────────── */
@@ -1292,10 +1404,35 @@
         <div class="rm-summary-body" id="rmSummaryBody"></div>
       </div>
 
+      <div class="rm-email-actions" id="rmEmailActions">
+        <button type="button" class="rm-btn ghost" id="rmEmailOpen">Email me this summary</button>
+      </div>
+
       <div class="rm-disclaimer">
         This summary is a memory aid, not medical advice. Always follow your care team's instructions.
       </div>
     </div>
+  </div>
+</div>
+
+<div id="emailModal" aria-hidden="true">
+  <div class="em-card" role="dialog" aria-modal="true" aria-labelledby="emailModalTitle">
+    <button class="em-close" id="emClose" type="button" aria-label="Close">&times;</button>
+    <h2 id="emailModalTitle">Email your summary</h2>
+    <p class="em-intro">We'll send your visit summary and the questions for your doctor to your inbox.</p>
+    <input
+      class="em-input"
+      id="emEmail"
+      type="email"
+      inputmode="email"
+      autocomplete="email"
+      placeholder="name@email.com"
+      aria-label="Your email address">
+    <div class="em-controls">
+      <button class="em-btn ghost"   id="emCancel" type="button">Cancel</button>
+      <button class="em-btn primary" id="emSend"   type="button">Send</button>
+    </div>
+    <div class="em-status" id="emStatus" aria-live="polite"></div>
   </div>
 </div>
 {% endblock %}
@@ -1310,6 +1447,7 @@
   var SILENCE_RMS   = 0.018;   // below this, a chunk is treated as silence (skip it)
   var TRANSCRIBE_URL = "{% url 'voice_transcribe' %}";
   var SUMMARIZE_URL  = "{% url 'visit_summarize' %}";
+  var EMAIL_SUMMARY_URL = "{% url 'visit_email_summary' %}";
 
   var rec = {
     stream: null, mr: null, mime: "", format: "webm",
@@ -1317,14 +1455,15 @@
     seq: 0, segments: {}, transcript: "", language: "auto",
     pendingXhr: 0, segTimer: null, tickTimer: null, meterLoop: null,
     startedAt: 0, elapsedMs: 0, summarizing: false, drainPoll: null,
-    hearingSpeech: false,
+    hearingSpeech: false, lastSummary: null,
     audioCtx: null, analyser: null, meterData: null
   };
 
   // --- DOM refs ---
   var $modal, $statusText, $timer, $pause, $stop, $discard,
       $transcript, $wordCount, $summary, $summaryBody,
-      $questions, $questionsList, $lang;
+      $questions, $questionsList, $lang, $emailActions,
+      $emailModal, $emEmail, $emSend, $emStatus;
 
   function isLiveTranscription() {
     return rec.pendingXhr > 0 ||
@@ -1447,6 +1586,8 @@
     $summaryBody.textContent = "";
     if ($questions)    $questions.classList.remove("show");
     if ($questionsList) $questionsList.innerHTML = "";
+    if ($emailActions) $emailActions.classList.remove("show");
+    rec.lastSummary = null;
     $pause.textContent = "Pause";
     $pause.disabled    = false;
     $stop.disabled     = false;
@@ -1722,6 +1863,11 @@
       if (data && data.doctor_questions) renderDoctorQuestions(data.doctor_questions);
       if (data && data.summary) {
         $summaryBody.innerHTML = renderMarkdown(data.summary);
+        rec.lastSummary = {
+          summary: data.summary,
+          doctor_questions: (data && data.doctor_questions) || []
+        };
+        if ($emailActions) $emailActions.classList.add("show");
       } else {
         $summaryBody.textContent = "No summary was returned.";
       }
@@ -1766,6 +1912,60 @@
     teardown(true);
   }
 
+  // ── Email summary ───────────────────────────────────────────────
+  function setEmailStatus(text, kind) {
+    if (!$emStatus) return;
+    $emStatus.className = "em-status" + (kind ? " " + kind : "");
+    $emStatus.innerHTML = text || "";
+  }
+
+  function openEmailModal() {
+    if (!rec.lastSummary || !$emailModal) return;
+    setEmailStatus("");
+    if ($emSend) $emSend.disabled = false;
+    $emailModal.classList.add("open");
+    $emailModal.setAttribute("aria-hidden", "false");
+    if ($emEmail) { setTimeout(function () { $emEmail.focus(); }, 50); }
+  }
+
+  function closeEmailModal() {
+    if (!$emailModal) return;
+    $emailModal.classList.remove("open");
+    $emailModal.setAttribute("aria-hidden", "true");
+  }
+
+  function sendSummaryEmail() {
+    if (!rec.lastSummary) return;
+    var email = ($emEmail && $emEmail.value || "").trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailStatus("Please enter a valid email address.", "error");
+      if ($emEmail) $emEmail.focus();
+      return;
+    }
+
+    if ($emSend) $emSend.disabled = true;
+    setEmailStatus('<span class="rm-spinner"></span> Sending…');
+
+    fetch(EMAIL_SUMMARY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: email,
+        summary: rec.lastSummary.summary,
+        doctor_questions: rec.lastSummary.doctor_questions
+      })
+    }).then(function (resp) {
+      if (!resp.ok) throw new Error("email_failed");
+      return resp.json();
+    }).then(function () {
+      setEmailStatus("Sent! Check your inbox.", "success");
+      setTimeout(closeEmailModal, 1800);
+    }).catch(function () {
+      if ($emSend) $emSend.disabled = false;
+      setEmailStatus("We couldn't send it right now. Please try again.", "error");
+    });
+  }
+
   // ── Wire up ─────────────────────────────────────────────────────
   document.addEventListener("DOMContentLoaded", function () {
     $modal         = $("recordModal");
@@ -1782,6 +1982,11 @@
     $questions     = $("rmQuestions");
     $questionsList = $("rmQuestionsList");
     $lang          = $("rmLang");
+    $emailActions  = $("rmEmailActions");
+    $emailModal    = $("emailModal");
+    $emEmail       = $("emEmail");
+    $emSend        = $("emSend");
+    $emStatus      = $("emStatus");
 
     var trigger = $("recordTrigger");
     if (trigger) trigger.addEventListener("click", openRecordModal);
@@ -1789,6 +1994,24 @@
     $pause.addEventListener("click",   recordTogglePause);
     $stop.addEventListener("click",    recordStopAndSummarize);
     $discard.addEventListener("click", requestClose);
+
+    var emailOpen = $("rmEmailOpen");
+    if (emailOpen) emailOpen.addEventListener("click", openEmailModal);
+    if ($emSend) $emSend.addEventListener("click", sendSummaryEmail);
+    var emCancel = $("emCancel");
+    if (emCancel) emCancel.addEventListener("click", closeEmailModal);
+    var emClose = $("emClose");
+    if (emClose) emClose.addEventListener("click", closeEmailModal);
+    if ($emailModal) {
+      $emailModal.addEventListener("click", function (ev) {
+        if (ev.target === $emailModal) closeEmailModal();
+      });
+    }
+    if ($emEmail) {
+      $emEmail.addEventListener("keydown", function (ev) {
+        if (ev.key === "Enter") sendSummaryEmail();
+      });
+    }
 
     if ($lang) {
       $lang.addEventListener("change", function () {
@@ -1801,7 +2024,12 @@
       if (ev.target === $modal) requestClose();
     });
     document.addEventListener("keydown", function (ev) {
-      if (ev.key === "Escape" && rec.open) requestClose();
+      if (ev.key !== "Escape") return;
+      if ($emailModal && $emailModal.classList.contains("open")) {
+        closeEmailModal();
+      } else if (rec.open) {
+        requestClose();
+      }
     });
   });
 })();

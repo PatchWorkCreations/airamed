@@ -1,6 +1,8 @@
 import json
 
 from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -9,6 +11,7 @@ from django.views.decorators.http import require_POST
 from . import voice_ai
 from .contact_email import ContactEmailError, send_contact_email
 from .forms import ContactForm
+from .summary_email import SummaryEmailError, send_summary_email
 
 
 def home(request):
@@ -112,3 +115,48 @@ def visit_summarize(request):
         return JsonResponse({'error': 'summary_failed'}, status=502)
 
     return JsonResponse(result)
+
+
+MAX_SUMMARY_CHARS = 20000
+MAX_QUESTIONS = 20
+MAX_QUESTION_CHARS = 500
+
+
+@csrf_exempt
+@require_POST
+def visit_email_summary(request):
+    """Email a visit summary and doctor questions to the user via Resend.
+
+    Body: {"email": "...", "summary": "...", "doctor_questions": ["...", ...]}
+    """
+    try:
+        data = json.loads(request.body or b'{}')
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'invalid_json'}, status=400)
+
+    email = (data.get('email') or '').strip()
+    try:
+        validate_email(email)
+    except ValidationError:
+        return JsonResponse({'error': 'invalid_email'}, status=400)
+
+    summary = (data.get('summary') or '').strip()
+    if not summary:
+        return JsonResponse({'error': 'missing_summary'}, status=400)
+    summary = summary[:MAX_SUMMARY_CHARS]
+
+    raw_questions = data.get('doctor_questions') or []
+    if not isinstance(raw_questions, list):
+        raw_questions = []
+    questions = [
+        str(q).strip()[:MAX_QUESTION_CHARS]
+        for q in raw_questions[:MAX_QUESTIONS]
+        if str(q).strip()
+    ]
+
+    try:
+        send_summary_email(to_email=email, summary_md=summary, doctor_questions=questions)
+    except SummaryEmailError:
+        return JsonResponse({'error': 'email_failed'}, status=502)
+
+    return JsonResponse({'ok': True})
