@@ -3,6 +3,7 @@
 {% block title %}Aira — Record your visit. Understand your care.{% endblock %}
 
 {% block head_extra %}
+<link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
 <style>
   /* ═══════════════════════════════════════════════════════════════
      AIRA — LANDING PAGE STYLES
@@ -14,38 +15,83 @@
   /* ─── HERO ─────────────────────────────────────────────────── */
   .hero {
     position: relative;
-    padding: 72px 32px 64px;
+    padding: 56px 32px 72px;
     overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 55% at 85% 20%, rgba(var(--teal-rgb), 0.12), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 10% 80%, rgba(var(--navy-rgb), 0.06), transparent 55%);
+    pointer-events: none;
   }
   .hero-grid {
     position: relative;
-    max-width: 1080px;
+    max-width: 1120px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 56px;
+    grid-template-columns: 1fr 1.05fr;
+    gap: 48px 56px;
     align-items: center;
   }
   .hero-copy { text-align: left; }
+  .hero-visual {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .hero-image-wrap {
+    position: relative;
+    width: 100%;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow:
+      0 24px 48px rgba(var(--navy-rgb), 0.14),
+      0 4px 12px rgba(var(--navy-rgb), 0.06);
+    border: 1px solid rgba(var(--navy-rgb), 0.08);
+    background: var(--white);
+  }
+  .hero-image-wrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 55%, rgba(var(--navy-rgb), 0.04) 100%);
+    pointer-events: none;
+  }
+  .hero-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: center 20%;
+  }
   .hero-action {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 14px;
+    gap: 12px;
+    width: 100%;
+    max-width: 320px;
+    margin-top: -8px;
   }
-  .hero-action .record-sub { max-width: 260px; }
+  .hero-action .record-sub { max-width: 280px; }
   /* teal glow pooled behind the record CTA */
   .hero-action::before {
     content: "";
     position: absolute;
     left: 50%;
-    top: 50%;
+    top: 28%;
     transform: translate(-50%, -50%);
-    width: 460px;
-    height: 460px;
-    background: radial-gradient(circle at center, rgba(var(--teal-rgb), 0.22), rgba(var(--teal-rgb), 0) 68%);
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle at center, rgba(var(--teal-rgb), 0.2), rgba(var(--teal-rgb), 0) 68%);
     z-index: -1;
     pointer-events: none;
   }
@@ -249,19 +295,23 @@
   }
   .step:hover::before { opacity: 1; }
   .step-mark {
-    width: 46px;
-    height: 46px;
-    border-radius: 14px;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(150deg, var(--navy) 15%, var(--teal) 100%);
-    color: var(--white);
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 1.3rem;
-    box-shadow: 0 6px 16px rgba(var(--navy-rgb), 0.22);
+    background: linear-gradient(145deg, rgba(var(--navy-rgb), 0.06) 0%, rgba(var(--teal-rgb), 0.12) 100%);
+    border: 1px solid rgba(var(--teal-rgb), 0.2);
+    box-shadow: 0 6px 16px rgba(var(--navy-rgb), 0.08);
     margin-bottom: 20px;
+    padding: 10px;
+  }
+  .step-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
   }
   .step h3 {
     font-family: 'Fraunces', serif;
@@ -330,18 +380,20 @@
   /* ─── TRUST CARDS ───────────────────────────────────────────── */
   .trust {
     padding: 64px 32px;
-    max-width: 860px;
+    max-width: 1000px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    align-items: start;
+    gap: 22px;
+    align-items: stretch;
   }
   .trust-card {
     background: var(--white);
     border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 28px 26px;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   }
   .trust-card:hover {
@@ -349,27 +401,36 @@
     box-shadow: 0 16px 36px rgba(var(--navy-rgb), 0.1);
     border-color: rgba(var(--teal-rgb), 0.4);
   }
-  .trust-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: rgba(var(--teal-rgb), 0.1);
-    color: var(--teal-deep);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 16px;
+  .trust-visual {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: linear-gradient(145deg, rgba(var(--navy-rgb), 0.04) 0%, rgba(var(--teal-rgb), 0.08) 100%);
+    border-bottom: 1px solid var(--line);
   }
-  .trust-icon svg {
-    width: 20px;
-    height: 20px;
+  .trust-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.35s ease;
+  }
+  .trust-card:hover .trust-visual img {
+    transform: scale(1.03);
+  }
+  .trust-body {
+    padding: 22px 24px 26px;
+    flex: 1;
   }
   .trust-card h3 {
     font-family: 'Fraunces', serif;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 1.05rem;
     color: var(--ink);
     margin-bottom: 8px;
+    line-height: 1.3;
   }
   .trust-card p {
     font-size: 0.92rem;
@@ -981,11 +1042,11 @@
   /* ─── RESPONSIVE ─────────────────────────────────────────────── */
   @media (max-width: 880px) {
     .hero {
-      padding: 64px 32px 56px;
+      padding: 48px 24px 56px;
     }
     .hero-grid {
       grid-template-columns: 1fr;
-      gap: 40px;
+      gap: 36px;
       max-width: 560px;
       text-align: center;
     }
@@ -998,6 +1059,9 @@
       margin-right: auto;
     }
     .hero-lead { margin-bottom: 16px; }
+    .hero-visual { order: -1; }
+    .hero-image { aspect-ratio: 16 / 10; }
+    .hero-action { margin-top: 0; }
   }
 
   @media (max-width: 720px) {
@@ -1033,6 +1097,7 @@
     #recordModal .rm-spinner { animation: none; }
 
     .langs-row { animation: none !important; }
+    .trust-card:hover .trust-visual img { transform: none; }
 
     .langs-marquee {
       overflow-x: auto;
@@ -1068,20 +1133,25 @@
         </p>
       </div>
 
-      <div class="hero-action">
-        <div class="record-orbit">
-          <span class="rec-ring" aria-hidden="true"></span>
-          <span class="rec-ring rec-ring-2" aria-hidden="true"></span>
-          <button class="record-btn" id="recordTrigger" aria-label="Start recording your visit">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="9" y="2" width="6" height="12" rx="3" fill="white"/>
-              <path d="M5 11a7 7 0 0014 0" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-              <path d="M12 18v3" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
-          </button>
+      <div class="hero-visual">
+       
+         
+
+        <div class="hero-action">
+          <div class="record-orbit">
+            <span class="rec-ring" aria-hidden="true"></span>
+            <span class="rec-ring rec-ring-2" aria-hidden="true"></span>
+            <button class="record-btn" id="recordTrigger" aria-label="Start recording your visit">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="9" y="2" width="6" height="12" rx="3" fill="white"/>
+                <path d="M5 11a7 7 0 0014 0" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M12 18v3" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="record-label">Start recording</div>
+          <div class="record-sub">Before your appointment begins. Aira takes care of the rest.</div>
         </div>
-        <div class="record-label">Start recording</div>
-        <div class="record-sub">Before your appointment begins. Aira takes care of the rest.</div>
       </div>
     </div>
   </section>
@@ -1129,17 +1199,41 @@
     <div class="section-eyebrow">How Aira works</div>
     <div class="steps-grid">
       <div class="step" data-step="1">
-        <div class="step-mark">1</div>
+        <div class="step-mark">
+          <img
+            src="https://res.cloudinary.com/dw5tnpylt/image/upload/f_auto,q_auto,w_96/v1783578961/01_Mic_Icon_yq4asr.png"
+            alt=""
+            width="48"
+            height="48"
+            decoding="async"
+          />
+        </div>
         <h3>Record your visit</h3>
         <p>Press record and leave it running while you talk with your doctor. No note-taking. No trying to remember every detail.</p>
       </div>
       <div class="step" data-step="2">
-        <div class="step-mark">2</div>
+        <div class="step-mark">
+          <img
+            src="https://res.cloudinary.com/dw5tnpylt/image/upload/f_auto,q_auto,w_96/v1783578961/02_Doc_icon_ekv3eq.png"
+            alt=""
+            width="48"
+            height="48"
+            decoding="async"
+          />
+        </div>
         <h3>Get a clear explanation</h3>
         <p>Aira turns the conversation into a simple, easy-to-understand summary in your preferred language.</p>
       </div>
       <div class="step" data-step="3">
-        <div class="step-mark">3</div>
+        <div class="step-mark">
+          <img
+            src="https://res.cloudinary.com/dw5tnpylt/image/upload/f_auto,q_auto,w_96/v1783578962/03_calendar_icon_vw1hrk.png"
+            alt=""
+            width="48"
+            height="48"
+            decoding="async"
+          />
+        </div>
         <h3>Leave with your next steps</h3>
         <p>You'll get important follow-up questions, reminders, and topics worth discussing at your next appointment.</p>
       </div>
@@ -1147,52 +1241,70 @@
   </section>
 
   <!-- ── TRUST CARDS ───────────────────────────────────────────── -->
-  <section class="trust wrap">
+  <section class="trust wrap" aria-label="Why families trust Aira">
     <div class="trust-card">
-      <div class="trust-icon">
-        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <path d="M10 2L3 5v5c0 4.1 3 7.9 7 9 4-1.1 7-4.9 7-9V5l-7-3z"
-                stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-          <path d="M7 10l2 2 4-4"
-                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <div class="trust-visual">
+        <img
+          src="https://res.cloudinary.com/dw5tnpylt/image/upload/f_auto,q_auto,w_600/v1783578963/01_built_your_privacy_yt3itu.png"
+          alt="Built with privacy in mind"
+          width="600"
+          height="338"
+          loading="lazy"
+          decoding="async"
+        />
       </div>
-      <h3>Built with privacy in mind</h3>
-      <p>Recording should only happen when everyone in the room agrees. Aira is designed to help you remember your visit — audio is not stored longer than necessary to create your summary.</p>
+      <div class="trust-body">
+        <h3>Built with privacy in mind</h3>
+        <p>Recording should only happen when everyone in the room agrees. Aira is designed to help you remember your visit — audio is not stored longer than necessary to create your summary.</p>
+      </div>
     </div>
     <div class="trust-card">
-      <div class="trust-icon">
-        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M10 6.5v4l2.5 2.5"
-                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <div class="trust-visual">
+        <img
+          src="https://res.cloudinary.com/dw5tnpylt/image/upload/f_auto,q_auto,w_600/v1783578963/02_grounded_in_trusted_xitepj.png"
+          alt="Grounded in trusted medical knowledge"
+          width="600"
+          height="338"
+          loading="lazy"
+          decoding="async"
+        />
       </div>
-      <h3>Grounded in trusted medical knowledge</h3>
-      <p>Every explanation is checked against trusted medical sources, including Mayo Clinic, Johns Hopkins Medicine, and Cleveland Clinic, helping make complex information easier to understand.</p>
+      <div class="trust-body">
+        <h3>Grounded in trusted medical knowledge</h3>
+        <p>Every explanation is checked against trusted medical sources, including Mayo Clinic, Johns Hopkins Medicine, and Cleveland Clinic, helping make complex information easier to understand.</p>
+      </div>
     </div>
     <div class="trust-card">
-      <div class="trust-icon">
-        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <path d="M4 10h8M9 7l3 3-3 3"
-                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <rect x="2" y="4" width="16" height="12" rx="3"
-                stroke="currentColor" stroke-width="1.5"/>
-        </svg>
+      <div class="trust-visual">
+        <img
+          src="https://res.cloudinary.com/dw5tnpylt/image/upload/f_auto,q_auto,w_600/v1783578963/03_a_memory_tool_lbfzvb.png"
+          alt="A memory tool — not medical advice"
+          width="600"
+          height="338"
+          loading="lazy"
+          decoding="async"
+        />
       </div>
-      <h3>A memory tool — not medical advice</h3>
-      <p>Aira helps you remember what was discussed and prepare for follow-up conversations. Always follow the guidance of your healthcare team.</p>
+      <div class="trust-body">
+        <h3>A memory tool — not medical advice</h3>
+        <p>Aira helps you remember what was discussed and prepare for follow-up conversations. Always follow the guidance of your healthcare team.</p>
+      </div>
     </div>
     <div class="trust-card">
-      <div class="trust-icon">
-        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"
-                stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
+      <div class="trust-visual">
+        <img
+          src="https://res.cloudinary.com/dw5tnpylt/image/upload/f_auto,q_auto,w_600/v1783578964/04_for_patients_families_caregivers_auiod8.png"
+          alt="For patients, families, and caregivers"
+          width="600"
+          height="338"
+          loading="lazy"
+          decoding="async"
+        />
       </div>
-      <h3>For patients, families, and caregivers</h3>
-      <p>Whether you're the patient, helping a loved one, or attending as a caregiver, Aira helps everyone leave with the same understanding.</p>
+      <div class="trust-body">
+        <h3>For patients, families, and caregivers</h3>
+        <p>Whether you're the patient, helping a loved one, or attending as a caregiver, Aira helps everyone leave with the same understanding.</p>
+      </div>
     </div>
   </section>
 
