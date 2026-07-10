@@ -1,0 +1,83 @@
+{% extends "myApp/pilot_dashboard/base.html" %}
+
+{% block title %}All Responses{% endblock %}
+{% block page_title %}All responses{% endblock %}
+
+{% block top_actions %}
+<a class="dash-btn" href="{% url 'pilot_dashboard_export_excel' %}?role={{ role_filter }}&q={{ search_query }}">Export Excel</a>
+<a class="dash-btn" href="{% url 'pilot_dashboard_export_pdf' %}?role={{ role_filter }}&q={{ search_query }}">Export PDF</a>
+<a class="dash-btn" href="{% url 'pilot_dashboard_print' %}?role={{ role_filter }}&q={{ search_query }}" target="_blank">Print</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head">
+    <h2>{{ total_count }} response{{ total_count|pluralize }}</h2>
+  </div>
+
+  <form class="filter-bar no-print" method="get">
+    <select name="role" aria-label="Filter by role">
+      <option value="">All roles</option>
+      {% for value, label in role_choices %}
+      <option value="{{ value }}" {% if role_filter == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <input type="search" name="q" value="{{ search_query }}" placeholder="Search in answers…" aria-label="Search responses">
+    <button class="dash-btn primary" type="submit">Apply filters</button>
+    {% if role_filter or search_query %}
+    <a class="dash-btn" href="{% url 'pilot_dashboard_responses' %}">Clear</a>
+    {% endif %}
+  </form>
+
+  {% if responses %}
+  <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Submitted</th>
+          <th>Role</th>
+          <th>Summary</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in responses %}
+        <tr>
+          <td>#{{ item.id }}</td>
+          <td>{{ item.created_at|date:"M j, Y g:i A" }}</td>
+          <td>
+            <span class="role-badge {% if item.role == 'caregiver' %}caregiver{% elif item.role == 'nurse' %}nurse{% endif %}">
+              {{ item.get_role_display }}
+            </span>
+          </td>
+          <td>
+            {% if item.responses.story %}
+              {{ item.responses.story|truncatechars:80 }}
+            {% elif item.responses.patient_understanding %}
+              Understanding: {{ item.responses.patient_understanding }}/5
+            {% elif item.responses.caregiver_confidence %}
+              Confidence: {{ item.responses.caregiver_confidence }}/5
+            {% elif item.responses.recommend %}
+              Recommend: {{ item.responses.recommend|title }}
+            {% else %}
+              {{ item.responses|length }} answer{{ item.responses|length|pluralize }}
+            {% endif %}
+          </td>
+          <td><a class="view-link" href="{% url 'pilot_dashboard_detail' item.id %}">View →</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    {% if role_filter or search_query %}
+      No responses match your filters.
+    {% else %}
+      No survey responses yet.
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

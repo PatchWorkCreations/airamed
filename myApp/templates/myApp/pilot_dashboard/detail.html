@@ -1,0 +1,36 @@
+{% extends "myApp/pilot_dashboard/base.html" %}
+
+{% block title %}Response #{{ response.id }}{% endblock %}
+{% block page_title %}Response #{{ response.id }}{% endblock %}
+
+{% block top_actions %}
+<a class="dash-btn" href="{% url 'pilot_dashboard_responses' %}">← All responses</a>
+<a class="dash-btn" href="{% url 'pilot_dashboard_export_pdf_detail' response.id %}">Download PDF</a>
+<button class="dash-btn" type="button" onclick="window.print()">Print</button>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head">
+    <div>
+      <h2>{{ response.get_role_display }}</h2>
+      <p style="font-size:0.88rem;color:var(--sage);margin-top:4px;">
+        Submitted {{ response.created_at|date:"F j, Y" }} at {{ response.created_at|time:"g:i A" }}
+      </p>
+    </div>
+  </div>
+
+  {% if answer_rows %}
+  <div class="answer-list">
+    {% for row in answer_rows %}
+    <div class="answer-row">
+      <div class="q">{{ row.label }}</div>
+      <div class="a">{{ row.value }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">This response has no recorded answers.</div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pilot Dashboard Login — Airamed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1B3B7D;
+      --teal: #2EB2C2;
+      --teal-deep: #249DA8;
+      --ivory: #F2F6FA;
+      --ink: #1A2E4A;
+      --sage: #5E7084;
+      --white: #FFFFFF;
+      --line: rgba(27, 59, 125, 0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font-family: 'Source Sans 3', sans-serif;
+      background:
+        radial-gradient(ellipse 70% 50% at 80% 10%, rgba(46, 178, 194, 0.14), transparent 60%),
+        var(--ivory);
+      color: var(--ink);
+    }
+    .login-card {
+      width: min(420px, 100%);
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 32px 28px;
+      box-shadow: 0 16px 40px rgba(27, 59, 125, 0.08);
+    }
+    .eyebrow {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--teal-deep);
+      margin-bottom: 6px;
+    }
+    h1 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+    .intro {
+      font-size: 0.92rem;
+      color: var(--sage);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+    }
+    input:focus-visible {
+      outline: 2px solid rgba(46, 178, 194, 0.45);
+      outline-offset: 1px;
+    }
+    button {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      background: var(--teal);
+      color: var(--white);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: var(--teal-deep); }
+    .error {
+      margin-bottom: 16px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(178, 59, 59, 0.08);
+      color: #B23B3B;
+      font-size: 0.88rem;
+    }
+    .back {
+      display: inline-block;
+      margin-top: 18px;
+      font-size: 0.88rem;
+      color: var(--sage);
+      text-decoration: none;
+    }
+    .back:hover { color: var(--navy); }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="eyebrow">60-Day Pilot</div>
+    <h1>Pilot Dashboard</h1>
+    <p class="intro">Sign in to review survey responses, metrics, and exports.</p>
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+      <button type="submit">Sign in</button>
+    </form>
+
+    <a class="back" href="{% url 'home' %}">← Back to Airamed</a>
+  </div>
+</body>
+</html>

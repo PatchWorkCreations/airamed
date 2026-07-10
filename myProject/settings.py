@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -34,6 +35,10 @@ RESEND_FROM_EMAIL = (
     or os.environ.get('RESEND_FROM')
     or 'Aira Contact <contact@airamed.org>'
 ).strip().strip('"').strip("'")
+
+# Custom pilot dashboard login (separate from Django admin)
+PILOT_DASHBOARD_USERNAME = os.environ.get('PILOT_DASHBOARD_USERNAME', '')
+PILOT_DASHBOARD_PASSWORD = os.environ.get('PILOT_DASHBOARD_PASSWORD', '')
 
 
 # Quick-start development settings - unsuitable for production
@@ -108,12 +113,14 @@ WSGI_APPLICATION = 'myProject.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+# Prefer DATABASE_URL (Postgres) from .env; fall back to local SQLite.
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
 

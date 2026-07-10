@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Airamed Pilot Responses — Print</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #1A2E4A;
+      margin: 24px;
+      line-height: 1.45;
+    }
+    h1 { font-size: 22px; margin-bottom: 4px; color: #1B3B7D; }
+    .meta { color: #5E7084; font-size: 13px; margin-bottom: 20px; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .stat {
+      border: 1px solid #D7E2EA;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .stat .label { font-size: 11px; text-transform: uppercase; color: #5E7084; }
+    .stat .value { font-size: 20px; font-weight: 700; color: #1B3B7D; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid #D7E2EA; padding: 8px; text-align: left; vertical-align: top; }
+    th { background: #E8F6F8; }
+    .response-block {
+      page-break-inside: avoid;
+      margin-top: 22px;
+      border-top: 2px solid #1B3B7D;
+      padding-top: 14px;
+    }
+    .response-block h2 { font-size: 16px; margin-bottom: 8px; }
+    .answer { margin-bottom: 6px; }
+    .answer strong { color: #5E7084; }
+    @media print {
+      body { margin: 12px; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="margin-bottom:16px;">
+    <button onclick="window.print()" style="padding:8px 14px;cursor:pointer;">Print / Save as PDF</button>
+  </div>
+
+  <h1>Airamed Pilot Dashboard — Survey Responses</h1>
+  <p class="meta">
+    Generated {{ "now"|date:"F j, Y g:i A" }}
+    {% if role_filter %} · Role: {{ role_filter }}{% endif %}
+    {% if search_query %} · Search: “{{ search_query }}”{% endif %}
+  </p>
+
+  <div class="stats">
+    <div class="stat"><div class="label">Total</div><div class="value">{{ stats.total }}</div></div>
+    <div class="stat"><div class="label">Patients</div><div class="value">{{ stats.by_role.patient }}</div></div>
+    <div class="stat"><div class="label">Caregivers</div><div class="value">{{ stats.by_role.caregiver }}</div></div>
+    <div class="stat"><div class="label">Nurses</div><div class="value">{{ stats.by_role.nurse }}</div></div>
+  </div>
+
+  {% for item in responses %}
+  <div class="response-block">
+    <h2>#{{ item.id }} — {{ item.role }} · {{ item.created_at|date:"M j, Y g:i A" }}</h2>
+    {% for row in item.rows %}
+    <div class="answer"><strong>{{ row.label }}:</strong> {{ row.value }}</div>
+    {% empty %}
+    <p>No answers recorded.</p>
+    {% endfor %}
+  </div>
+  {% empty %}
+  <p>No responses to print.</p>
+  {% endfor %}
+
+  <script>
+    window.addEventListener('load', function () {
+      if (window.location.search.indexOf('auto=1') !== -1) window.print();
+    });
+  </script>
+</body>
+</html>

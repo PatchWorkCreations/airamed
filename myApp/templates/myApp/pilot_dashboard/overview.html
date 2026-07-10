@@ -1,0 +1,104 @@
+{% extends "myApp/pilot_dashboard/base.html" %}
+
+{% block title %}Overview{% endblock %}
+{% block page_title %}Pilot overview{% endblock %}
+
+{% block top_actions %}
+<a class="dash-btn" href="{% url 'pilot_dashboard_export_excel' %}">Export Excel</a>
+<a class="dash-btn" href="{% url 'pilot_dashboard_export_pdf' %}">Export PDF</a>
+<a class="dash-btn" href="{% url 'pilot_dashboard_print' %}" target="_blank" onclick="window.open(this.href); return false;">Print</a>
+{% endblock %}
+
+{% block content %}
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="label">Total responses</div>
+    <div class="value">{{ stats.total }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Patients</div>
+    <div class="value">{{ stats.by_role.patient }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Caregivers</div>
+    <div class="value">{{ stats.by_role.caregiver }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Nurses / staff</div>
+    <div class="value">{{ stats.by_role.nurse }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Avg patient understanding</div>
+    <div class="value">{% if stats.avg_patient_understanding %}{{ stats.avg_patient_understanding }}/5{% else %}—{% endif %}</div>
+    <div class="sub">Goal: 4.5/5</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Avg caregiver confidence</div>
+    <div class="value">{% if stats.avg_caregiver_confidence %}{{ stats.avg_caregiver_confidence }}/5{% else %}—{% endif %}</div>
+    <div class="sub">Goal: +20%</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Medication all-yes</div>
+    <div class="value">{% if stats.med_all_yes_percent is not None %}{{ stats.med_all_yes_percent }}%{% else %}—{% endif %}</div>
+    <div class="sub">Goal: 90%+</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Would recommend</div>
+    <div class="value">{% if stats.recommend_yes_percent is not None %}{{ stats.recommend_yes_percent }}%{% else %}—{% endif %}</div>
+    <div class="sub">Patients & caregivers</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Repeat clarification calls</div>
+    <div class="value">{% if stats.repeat_call_yes_percent is not None %}{{ stats.repeat_call_yes_percent }}%{% else %}—{% endif %}</div>
+    <div class="sub">Nurse-reported · goal: reduce 20–30%</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Follow-up attended</div>
+    <div class="value">{% if stats.followup_attended_percent is not None %}{{ stats.followup_attended_percent }}%{% else %}—{% endif %}</div>
+    <div class="sub">Goal: 88%</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Staff: easier discharge</div>
+    <div class="value">{% if stats.avg_staff_education %}{{ stats.avg_staff_education }}/5{% else %}—{% endif %}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Staff: continue using</div>
+    <div class="value">{% if stats.staff_continue_yes_percent is not None %}{{ stats.staff_continue_yes_percent }}%{% else %}—{% endif %}</div>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Recent responses</h2>
+    <a class="dash-btn" href="{% url 'pilot_dashboard_responses' %}">View all</a>
+  </div>
+  {% if recent %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Submitted</th>
+        <th>Role</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in recent %}
+      <tr>
+        <td>#{{ item.id }}</td>
+        <td>{{ item.created_at|date:"M j, Y g:i A" }}</td>
+        <td>
+          <span class="role-badge {% if item.role == 'caregiver' %}caregiver{% elif item.role == 'nurse' %}nurse{% endif %}">
+            {{ item.get_role_display }}
+          </span>
+        </td>
+        <td><a class="view-link" href="{% url 'pilot_dashboard_detail' item.id %}">View answers →</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">No survey responses yet. They will appear here as participants submit feedback.</div>
+  {% endif %}
+</section>
+{% endblock %}

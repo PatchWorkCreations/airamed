@@ -11,7 +11,10 @@ from django.views.decorators.http import require_POST
 from . import voice_ai
 from .contact_email import ContactEmailError, send_contact_email
 from .forms import ContactForm
+from .models import PilotSurveyResponse
 from .summary_email import SummaryEmailError, send_summary_email
+
+PILOT_SURVEY_ROLES = {PilotSurveyResponse.ROLE_PATIENT, PilotSurveyResponse.ROLE_CAREGIVER, PilotSurveyResponse.ROLE_NURSE}
 
 
 def home(request):
@@ -159,4 +162,28 @@ def visit_email_summary(request):
     except SummaryEmailError:
         return JsonResponse({'error': 'email_failed'}, status=502)
 
+    return JsonResponse({'ok': True})
+
+
+@csrf_exempt
+@require_POST
+def pilot_survey_submit(request):
+    """Store a 60-day pilot dashboard survey response.
+
+    Body: {"role": "patient|caregiver|nurse", "responses": {...}}
+    """
+    try:
+        data = json.loads(request.body or b'{}')
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'invalid_json'}, status=400)
+
+    role = (data.get('role') or '').strip()
+    if role not in PILOT_SURVEY_ROLES:
+        return JsonResponse({'error': 'invalid_role'}, status=400)
+
+    responses = data.get('responses')
+    if not isinstance(responses, dict) or not responses:
+        return JsonResponse({'error': 'missing_responses'}, status=400)
+
+    PilotSurveyResponse.objects.create(role=role, responses=responses)
     return JsonResponse({'ok': True})

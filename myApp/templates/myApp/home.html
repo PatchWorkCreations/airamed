@@ -1107,6 +1107,336 @@
     }
     .langs-marquee::-webkit-scrollbar { display: none; }
   }
+
+  /* ─── PILOT SURVEY SIDE PANEL ───────────────────────────────── */
+  .pilot-tab {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 180;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    padding: 16px 10px;
+    border: none;
+    border-radius: 12px 0 0 12px;
+    background: var(--navy);
+    color: var(--white);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    box-shadow: -4px 0 20px rgba(var(--navy-rgb), 0.18);
+    transition: background 0.15s ease, padding-right 0.15s ease;
+  }
+  .pilot-tab:hover { background: var(--navy-deep); padding-right: 14px; }
+  .pilot-tab[aria-expanded="true"] { opacity: 0; pointer-events: none; }
+
+  #pilotPanel {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    pointer-events: none;
+    visibility: hidden;
+  }
+  #pilotPanel.open {
+    pointer-events: auto;
+    visibility: visible;
+  }
+  #pilotPanel .pp-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(var(--navy-rgb), 0.35);
+    opacity: 0;
+    transition: opacity 0.28s ease;
+  }
+  #pilotPanel.open .pp-backdrop { opacity: 1; }
+
+  #pilotPanel .pp-drawer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(520px, 100vw);
+    height: 100%;
+    background: var(--white);
+    box-shadow: -8px 0 40px rgba(var(--navy-rgb), 0.16);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  #pilotPanel.open .pp-drawer { transform: translateX(0); }
+
+  .pp-header {
+    flex-shrink: 0;
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(var(--teal-rgb), 0.06), transparent);
+  }
+  .pp-header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .pp-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--teal-deep);
+    margin-bottom: 4px;
+  }
+  .pp-header h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .pp-goal {
+    font-size: 0.9rem;
+    color: var(--sage);
+    line-height: 1.5;
+    margin-top: 8px;
+  }
+  .pp-close {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--sage);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .pp-close:hover { color: var(--pine); border-color: var(--pine); }
+
+  .pp-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px 28px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pp-role-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--pine);
+    margin-bottom: 8px;
+  }
+  .pp-role-select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: var(--white);
+    margin-bottom: 24px;
+  }
+  .pp-role-select:focus-visible {
+    outline: 2px solid rgba(var(--teal-rgb), 0.45);
+    outline-offset: 1px;
+  }
+
+  .pp-section {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .pp-section:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .pp-section[hidden] { display: none !important; }
+
+  .pp-section-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--teal-deep);
+    margin-bottom: 4px;
+  }
+  .pp-section h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .pp-section .pp-question {
+    font-size: 0.92rem;
+    color: var(--ink);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .pp-goal-tag {
+    display: inline-block;
+    font-size: 0.78rem;
+    color: var(--sage);
+    background: rgba(var(--navy-rgb), 0.05);
+    border-radius: 8px;
+    padding: 6px 10px;
+    margin-bottom: 14px;
+    line-height: 1.4;
+  }
+
+  .pp-scale {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pp-scale-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .pp-scale-option:hover { border-color: rgba(var(--teal-rgb), 0.45); }
+  .pp-scale-option:has(input:checked) {
+    border-color: var(--teal);
+    background: rgba(var(--teal-rgb), 0.08);
+  }
+  .pp-scale-option input { accent-color: var(--teal-deep); }
+  .pp-scale-option span { font-size: 0.9rem; color: var(--ink); }
+
+  .pp-checklist { display: flex; flex-direction: column; gap: 10px; }
+  .pp-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .pp-check:hover { border-color: rgba(var(--teal-rgb), 0.45); }
+  .pp-check:has(input:checked) {
+    border-color: var(--teal);
+    background: rgba(var(--teal-rgb), 0.08);
+  }
+  .pp-check input { margin-top: 3px; accent-color: var(--teal-deep); }
+  .pp-check span { font-size: 0.9rem; line-height: 1.45; }
+
+  .pp-stars {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .pp-star {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--sage);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.12s, border-color 0.12s, background 0.12s, transform 0.1s;
+  }
+  .pp-star:hover, .pp-star.active {
+    color: var(--teal-deep);
+    border-color: rgba(var(--teal-rgb), 0.5);
+    background: rgba(var(--teal-rgb), 0.08);
+  }
+  .pp-star:active { transform: scale(0.95); }
+
+  .pp-yn {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pp-yn label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .pp-yn label:hover { border-color: rgba(var(--teal-rgb), 0.45); }
+  .pp-yn label:has(input:checked) {
+    border-color: var(--teal);
+    background: rgba(var(--teal-rgb), 0.08);
+  }
+  .pp-yn input { accent-color: var(--teal-deep); }
+
+  .pp-textarea {
+    width: 100%;
+    min-height: 88px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    resize: vertical;
+    color: var(--ink);
+  }
+  .pp-textarea:focus-visible {
+    outline: 2px solid rgba(var(--teal-rgb), 0.45);
+    outline-offset: 1px;
+  }
+  .pp-hint {
+    font-size: 0.8rem;
+    color: var(--sage);
+    margin-top: 8px;
+    line-height: 1.4;
+  }
+
+  .pp-footer {
+    flex-shrink: 0;
+    padding: 16px 24px 22px;
+    border-top: 1px solid var(--line);
+    background: var(--ivory);
+  }
+  .pp-submit {
+    width: 100%;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 12px;
+    background: var(--teal);
+    color: var(--white);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .pp-submit:hover:not([disabled]) { background: var(--teal-deep); }
+  .pp-submit:active:not([disabled]) { transform: translateY(1px); }
+  .pp-submit[disabled] { opacity: 0.5; cursor: not-allowed; }
+  .pp-status {
+    margin-top: 10px;
+    font-size: 0.88rem;
+    text-align: center;
+    min-height: 1.3em;
+    color: var(--sage);
+  }
+  .pp-status.success { color: var(--pine); }
+  .pp-status.error { color: #B23B3B; }
+
+  @media (max-width: 720px) {
+    .pilot-tab { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #pilotPanel .pp-backdrop,
+    #pilotPanel .pp-drawer { transition: none; }
+  }
 </style>
 {% endblock %}
 
@@ -1134,9 +1464,6 @@
       </div>
 
       <div class="hero-visual">
-       
-         
-
         <div class="hero-action">
           <div class="record-orbit">
             <span class="rec-ring" aria-hidden="true"></span>
@@ -1388,6 +1715,205 @@
   </section>
 
 </main>
+
+<button type="button" class="pilot-tab" id="pilotTab" aria-expanded="false" aria-controls="pilotPanel">
+  Pilot Survey
+</button>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PILOT DASHBOARD SURVEY — SLIDE-IN PANEL
+═══════════════════════════════════════════════════════════════ -->
+<div id="pilotPanel" aria-hidden="true">
+  <div class="pp-backdrop" id="pilotBackdrop"></div>
+  <aside class="pp-drawer" role="dialog" aria-modal="true" aria-labelledby="pilotPanelTitle">
+    <header class="pp-header">
+      <div class="pp-header-top">
+        <div>
+          <div class="pp-eyebrow">60-Day Pilot</div>
+          <h2 id="pilotPanelTitle">Airamed Pilot Dashboard</h2>
+        </div>
+        <button type="button" class="pp-close" id="pilotClose" aria-label="Close survey">&times;</button>
+      </div>
+      <p class="pp-goal">Help us measure whether Airamed improves patient understanding, caregiver confidence, and communication while reducing unnecessary staff workload.</p>
+    </header>
+
+    <form class="pp-body" id="pilotForm" novalidate>
+      <label class="pp-role-label" for="pilotRole">I am a…</label>
+      <select class="pp-role-select" id="pilotRole" name="role" required>
+        <option value="" selected disabled>Select your role</option>
+        <option value="patient">Patient</option>
+        <option value="caregiver">Family member / Caregiver</option>
+        <option value="nurse">Nurse / Staff</option>
+      </select>
+
+      <!-- 1. Patient Understanding -->
+      <section class="pp-section" data-roles="patient" hidden>
+        <div class="pp-section-num">1 · Primary metric</div>
+        <h3>Patient Understanding</h3>
+        <p class="pp-question">How well do you understand your care plan after leaving the hospital?</p>
+        <div class="pp-goal-tag">Goal: 4.5/5 (baseline 3.6/5)</div>
+        <div class="pp-scale" role="radiogroup" aria-label="Patient understanding">
+          <label class="pp-scale-option"><input type="radio" name="patient_understanding" value="1" required><span>1 — Not at all</span></label>
+          <label class="pp-scale-option"><input type="radio" name="patient_understanding" value="2"><span>2 — Slightly</span></label>
+          <label class="pp-scale-option"><input type="radio" name="patient_understanding" value="3"><span>3 — Somewhat</span></label>
+          <label class="pp-scale-option"><input type="radio" name="patient_understanding" value="4"><span>4 — Mostly</span></label>
+          <label class="pp-scale-option"><input type="radio" name="patient_understanding" value="5"><span>5 — Completely</span></label>
+        </div>
+      </section>
+
+      <!-- 2. Caregiver Confidence -->
+      <section class="pp-section" data-roles="caregiver" hidden>
+        <div class="pp-section-num">2</div>
+        <h3>Caregiver Confidence</h3>
+        <p class="pp-question">How confident are you that you know how to care for your loved one at home?</p>
+        <div class="pp-goal-tag">Goal: increase by at least 20%</div>
+        <div class="pp-scale" role="radiogroup" aria-label="Caregiver confidence">
+          <label class="pp-scale-option"><input type="radio" name="caregiver_confidence" value="1" required><span>1 — Not at all confident</span></label>
+          <label class="pp-scale-option"><input type="radio" name="caregiver_confidence" value="2"><span>2 — Slightly confident</span></label>
+          <label class="pp-scale-option"><input type="radio" name="caregiver_confidence" value="3"><span>3 — Somewhat confident</span></label>
+          <label class="pp-scale-option"><input type="radio" name="caregiver_confidence" value="4"><span>4 — Mostly confident</span></label>
+          <label class="pp-scale-option"><input type="radio" name="caregiver_confidence" value="5"><span>5 — Completely confident</span></label>
+        </div>
+      </section>
+
+      <!-- 3. Medication Understanding -->
+      <section class="pp-section" data-roles="patient" hidden>
+        <div class="pp-section-num">3</div>
+        <h3>Medication Understanding</h3>
+        <p class="pp-question">Do you understand the following about your medications?</p>
+        <div class="pp-goal-tag">Goal: 90%+ answer Yes to all four</div>
+        <div class="pp-checklist">
+          <label class="pp-check"><input type="checkbox" name="med_why" value="yes"><span>Why you're taking each medication</span></label>
+          <label class="pp-check"><input type="checkbox" name="med_when" value="yes"><span>When to take it</span></label>
+          <label class="pp-check"><input type="checkbox" name="med_side_effects" value="yes"><span>Possible side effects</span></label>
+          <label class="pp-check"><input type="checkbox" name="med_call_doctor" value="yes"><span>When to call your doctor</span></label>
+        </div>
+      </section>
+
+      <!-- 4. Nurse Follow-up Calls -->
+      <section class="pp-section" data-roles="nurse" hidden>
+        <div class="pp-section-num">4</div>
+        <h3>Nurse Follow-up Calls</h3>
+        <p class="pp-question">Was this post-discharge call about something already covered during discharge?</p>
+        <div class="pp-goal-tag">Goal: reduce repeat clarification calls by 20–30%</div>
+        <div class="pp-yn" role="radiogroup" aria-label="Repeat clarification call">
+          <label><input type="radio" name="repeat_call" value="yes" required> Yes</label>
+          <label><input type="radio" name="repeat_call" value="no"> No</label>
+        </div>
+        <p class="pp-question" style="margin-top:16px">If yes, what topic?</p>
+        <div class="pp-checklist">
+          <label class="pp-check"><input type="checkbox" name="repeat_topic_medication" value="yes"><span>Medication confusion</span></label>
+          <label class="pp-check"><input type="checkbox" name="repeat_topic_wound" value="yes"><span>Wound care</span></label>
+          <label class="pp-check"><input type="checkbox" name="repeat_topic_diet" value="yes"><span>Diet</span></label>
+          <label class="pp-check"><input type="checkbox" name="repeat_topic_appointment" value="yes"><span>Follow-up appointments</span></label>
+          <label class="pp-check"><input type="checkbox" name="repeat_topic_activity" value="yes"><span>Activity restrictions</span></label>
+        </div>
+      </section>
+
+      <!-- 5. Appointment Adherence -->
+      <section class="pp-section" data-roles="nurse" hidden>
+        <div class="pp-section-num">5</div>
+        <h3>Appointment Adherence</h3>
+        <p class="pp-question">Did the patient attend their scheduled follow-up visit within 30 days?</p>
+        <div class="pp-goal-tag">Goal: 88% adherence (baseline 76%)</div>
+        <div class="pp-yn" role="radiogroup" aria-label="Follow-up attended">
+          <label><input type="radio" name="followup_attended" value="yes" required> Yes, attended</label>
+          <label><input type="radio" name="followup_attended" value="no"> No, did not attend</label>
+          <label><input type="radio" name="followup_attended" value="pending"> Not yet / pending</label>
+        </div>
+      </section>
+
+      <!-- 6. Patient Satisfaction -->
+      <section class="pp-section" data-roles="patient caregiver" hidden>
+        <div class="pp-section-num">6</div>
+        <h3>Patient Satisfaction</h3>
+
+        <p class="pp-question" data-show-roles="patient">Did Airamed help you understand your care?</p>
+        <p class="pp-question" data-show-roles="caregiver" hidden>Did Airamed help your loved one understand their care?</p>
+        <div class="pp-stars" data-field="satisfaction_understanding" role="radiogroup" aria-label="Understanding rating">
+          <button type="button" class="pp-star" data-value="1" aria-label="1 star">★</button>
+          <button type="button" class="pp-star" data-value="2" aria-label="2 stars">★</button>
+          <button type="button" class="pp-star" data-value="3" aria-label="3 stars">★</button>
+          <button type="button" class="pp-star" data-value="4" aria-label="4 stars">★</button>
+          <button type="button" class="pp-star" data-value="5" aria-label="5 stars">★</button>
+        </div>
+        <input type="hidden" name="satisfaction_understanding" value="">
+
+        <p class="pp-question" style="margin-top:18px">Would you recommend Airamed to another patient?</p>
+        <div class="pp-yn">
+          <label><input type="radio" name="recommend" value="yes" required> Yes</label>
+          <label><input type="radio" name="recommend" value="no"> No</label>
+        </div>
+
+        <p class="pp-question" style="margin-top:18px">Did Airamed reduce anxiety?</p>
+        <div class="pp-yn">
+          <label><input type="radio" name="anxiety" value="yes" required> Yes</label>
+          <label><input type="radio" name="anxiety" value="somewhat"> Somewhat</label>
+          <label><input type="radio" name="anxiety" value="no"> No</label>
+        </div>
+      </section>
+
+      <!-- 7. Staff Experience -->
+      <section class="pp-section" data-roles="nurse" hidden>
+        <div class="pp-section-num">7</div>
+        <h3>Staff Experience</h3>
+
+        <p class="pp-question">Did Airamed make discharge education easier?</p>
+        <div class="pp-stars" data-field="staff_education_easier" role="radiogroup" aria-label="Discharge education easier">
+          <button type="button" class="pp-star" data-value="1" aria-label="1 star">★</button>
+          <button type="button" class="pp-star" data-value="2" aria-label="2 stars">★</button>
+          <button type="button" class="pp-star" data-value="3" aria-label="3 stars">★</button>
+          <button type="button" class="pp-star" data-value="4" aria-label="4 stars">★</button>
+          <button type="button" class="pp-star" data-value="5" aria-label="5 stars">★</button>
+        </div>
+        <input type="hidden" name="staff_education_easier" value="">
+
+        <p class="pp-question" style="margin-top:18px">Did patients ask fewer repeated questions?</p>
+        <div class="pp-stars" data-field="staff_fewer_questions" role="radiogroup" aria-label="Fewer repeated questions">
+          <button type="button" class="pp-star" data-value="1" aria-label="1 star">★</button>
+          <button type="button" class="pp-star" data-value="2" aria-label="2 stars">★</button>
+          <button type="button" class="pp-star" data-value="3" aria-label="3 stars">★</button>
+          <button type="button" class="pp-star" data-value="4" aria-label="4 stars">★</button>
+          <button type="button" class="pp-star" data-value="5" aria-label="5 stars">★</button>
+        </div>
+        <input type="hidden" name="staff_fewer_questions" value="">
+
+        <p class="pp-question" style="margin-top:18px">Would you continue using Airamed?</p>
+        <div class="pp-yn">
+          <label><input type="radio" name="staff_continue" value="yes" required> Yes</label>
+          <label><input type="radio" name="staff_continue" value="no"> No</label>
+        </div>
+      </section>
+
+      <!-- 8. Time Saved -->
+      <section class="pp-section" data-roles="nurse" hidden>
+        <div class="pp-section-num">8</div>
+        <h3>Time Saved</h3>
+        <p class="pp-question">Approximately how much time did Airamed save during discharge?</p>
+        <div class="pp-scale" role="radiogroup" aria-label="Time saved">
+          <label class="pp-scale-option"><input type="radio" name="time_saved" value="0" required><span>0 minutes</span></label>
+          <label class="pp-scale-option"><input type="radio" name="time_saved" value="5"><span>5 minutes</span></label>
+          <label class="pp-scale-option"><input type="radio" name="time_saved" value="10"><span>10 minutes</span></label>
+          <label class="pp-scale-option"><input type="radio" name="time_saved" value="15"><span>15+ minutes</span></label>
+        </div>
+      </section>
+
+      <!-- 9. Qualitative Stories -->
+      <section class="pp-section" data-roles="patient caregiver nurse" hidden>
+        <div class="pp-section-num">9</div>
+        <h3>Your Story</h3>
+        <p class="pp-question">In one or two sentences, share how Airamed helped (or didn't).</p>
+        <textarea class="pp-textarea" name="story" rows="4" placeholder="e.g. &quot;This was the first time I really understood why I was taking my medications.&quot;"></textarea>
+        <p class="pp-hint">Optional — but powerful stories help us improve and share the pilot's impact.</p>
+      </section>
+    </form>
+
+    <footer class="pp-footer">
+      <button type="submit" form="pilotForm" class="pp-submit" id="pilotSubmit" disabled>Submit feedback</button>
+      <div class="pp-status" id="pilotStatus" aria-live="polite"></div>
+    </footer>
+  </aside>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════════
      RECORD & REMEMBER MODAL
@@ -2142,6 +2668,171 @@
       } else if (rec.open) {
         requestClose();
       }
+    });
+  });
+})();
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  var PILOT_URL = "{% url 'pilot_survey_submit' %}";
+  var $panel, $form, $role, $submit, $status, $tab;
+
+  function $(id) { return document.getElementById(id); }
+
+  function openPilotPanel() {
+    if (!$panel) return;
+    $panel.classList.add("open");
+    $panel.setAttribute("aria-hidden", "false");
+    if ($tab) $tab.setAttribute("aria-expanded", "true");
+    document.body.style.overflow = "hidden";
+    var closeBtn = $("pilotClose");
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function closePilotPanel() {
+    if (!$panel) return;
+    $panel.classList.remove("open");
+    $panel.setAttribute("aria-hidden", "true");
+    if ($tab) $tab.setAttribute("aria-expanded", "false");
+    document.body.style.overflow = "";
+  }
+
+  function updateSections() {
+    var role = ($role && $role.value) || "";
+    var sections = document.querySelectorAll(".pp-section[data-roles]");
+    sections.forEach(function (sec) {
+      var roles = (sec.getAttribute("data-roles") || "").split(/\s+/);
+      var show = role && roles.indexOf(role) !== -1;
+      sec.hidden = !show;
+      sec.querySelectorAll("input, textarea, select, button.pp-star").forEach(function (el) {
+        if (el.type === "radio" || el.type === "checkbox") {
+          if (!show) el.checked = false;
+        } else if (el.tagName === "TEXTAREA") {
+          if (!show) el.value = "";
+        }
+      });
+      sec.querySelectorAll("input[type='hidden']").forEach(function (el) {
+        if (!show) el.value = "";
+      });
+      sec.querySelectorAll(".pp-star.active").forEach(function (el) {
+        if (!show) el.classList.remove("active");
+      });
+    });
+
+    document.querySelectorAll("[data-show-roles]").forEach(function (el) {
+      var roles = (el.getAttribute("data-show-roles") || "").split(/\s+/);
+      el.hidden = !(role && roles.indexOf(role) !== -1);
+    });
+
+    if ($submit) $submit.disabled = !role;
+    if ($status) $status.textContent = "";
+  }
+
+  function initStars() {
+    document.querySelectorAll(".pp-stars").forEach(function (group) {
+      var field = group.getAttribute("data-field");
+      var hidden = field ? document.querySelector('input[type="hidden"][name="' + field + '"]') : null;
+      group.querySelectorAll(".pp-star").forEach(function (star) {
+        star.addEventListener("click", function () {
+          var val = star.getAttribute("data-value");
+          group.querySelectorAll(".pp-star").forEach(function (s, i) {
+            s.classList.toggle("active", i < Number(val));
+          });
+          if (hidden) hidden.value = val;
+        });
+      });
+    });
+  }
+
+  function collectResponses() {
+    var data = {};
+    if (!$form) return data;
+
+    $form.querySelectorAll("input[type='radio']:checked").forEach(function (el) {
+      data[el.name] = el.value;
+    });
+    $form.querySelectorAll("input[type='checkbox']:checked").forEach(function (el) {
+      data[el.name] = el.value;
+    });
+    $form.querySelectorAll("input[type='hidden']").forEach(function (el) {
+      if (el.name && el.value) data[el.name] = el.value;
+    });
+    var story = $form.querySelector("textarea[name='story']");
+    if (story && story.value.trim()) data.story = story.value.trim();
+
+    return data;
+  }
+
+  function setStatus(msg, type) {
+    if (!$status) return;
+    $status.textContent = msg;
+    $status.className = "pp-status" + (type ? " " + type : "");
+  }
+
+  function submitPilotForm(ev) {
+    ev.preventDefault();
+    var role = ($role && $role.value) || "";
+    if (!role) {
+      setStatus("Please select your role.", "error");
+      return;
+    }
+
+    var responses = collectResponses();
+    if ($submit) $submit.disabled = true;
+    setStatus("Submitting…");
+
+    fetch(PILOT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: role, responses: responses })
+    }).then(function (resp) {
+      if (!resp.ok) throw new Error("submit_failed");
+      return resp.json();
+    }).then(function () {
+      setStatus("Thank you! Your feedback has been recorded.", "success");
+      $form.reset();
+      updateSections();
+      document.querySelectorAll(".pp-star.active").forEach(function (s) {
+        s.classList.remove("active");
+      });
+      setTimeout(closePilotPanel, 2200);
+    }).catch(function () {
+      setStatus("We couldn't save your feedback. Please try again.", "error");
+    }).finally(function () {
+      if ($submit) $submit.disabled = !($role && $role.value);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    $panel = $("pilotPanel");
+    $form = $("pilotForm");
+    $role = $("pilotRole");
+    $submit = $("pilotSubmit");
+    $status = $("pilotStatus");
+    $tab = $("pilotTab");
+
+    if (!$panel || !$form) return;
+
+    initStars();
+    updateSections();
+
+    if ($role) $role.addEventListener("change", updateSections);
+    if ($form) $form.addEventListener("submit", submitPilotForm);
+
+    if ($tab) $tab.addEventListener("click", openPilotPanel);
+
+    var closeBtn = $("pilotClose");
+    if (closeBtn) closeBtn.addEventListener("click", closePilotPanel);
+
+    var backdrop = $("pilotBackdrop");
+    if (backdrop) backdrop.addEventListener("click", closePilotPanel);
+
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key !== "Escape") return;
+      if ($panel.classList.contains("open")) closePilotPanel();
     });
   });
 })();

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Pilot Dashboard{% endblock %} — Airamed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1B3B7D;
+      --navy-deep: #152E63;
+      --teal: #2EB2C2;
+      --teal-deep: #249DA8;
+      --ivory: #F2F6FA;
+      --ink: #1A2E4A;
+      --sage: #5E7084;
+      --white: #FFFFFF;
+      --line: rgba(27, 59, 125, 0.12);
+      --sidebar-w: 248px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: var(--ivory);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    .dash-layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr;
+      min-height: 100vh;
+    }
+
+    .dash-sidebar {
+      background: var(--navy);
+      color: var(--white);
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .dash-brand {
+      font-family: 'Fraunces', serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+    .dash-brand span {
+      display: block;
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 4px;
+    }
+    .dash-nav { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .dash-nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.82);
+      transition: background 0.15s, color 0.15s;
+    }
+    .dash-nav a:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+    .dash-nav a.active {
+      background: rgba(46, 178, 194, 0.22);
+      color: var(--white);
+      border: 1px solid rgba(46, 178, 194, 0.35);
+    }
+    .dash-nav svg { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.9; }
+
+    .dash-sidebar-footer {
+      border-top: 1px solid rgba(255,255,255,0.12);
+      padding-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .dash-sidebar-footer a {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.7);
+      padding: 6px 4px;
+    }
+    .dash-sidebar-footer a:hover { color: var(--white); }
+
+    .dash-main { min-width: 0; }
+    .dash-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px 28px;
+      background: var(--white);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .dash-topbar h1 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.45rem;
+      font-weight: 600;
+    }
+    .dash-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .dash-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .dash-btn:hover { border-color: var(--navy); }
+    .dash-btn.primary {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: var(--white);
+    }
+    .dash-btn.primary:hover { background: var(--teal-deep); border-color: var(--teal-deep); }
+
+    .dash-content { padding: 24px 28px 40px; }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .stat-card .label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--sage);
+      margin-bottom: 6px;
+    }
+    .stat-card .value {
+      font-family: 'Fraunces', serif;
+      font-size: 1.65rem;
+      font-weight: 600;
+      color: var(--navy);
+      line-height: 1.1;
+    }
+    .stat-card .sub {
+      font-size: 0.82rem;
+      color: var(--sage);
+      margin-top: 4px;
+    }
+
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(242, 246, 250, 0.6);
+    }
+    .panel-head h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .filter-bar select,
+    .filter-bar input[type="search"] {
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      min-width: 160px;
+    }
+    .filter-bar input[type="search"] { flex: 1; min-width: 200px; }
+
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th,
+    .data-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.9rem;
+      vertical-align: top;
+    }
+    .data-table th {
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--sage);
+      background: rgba(242, 246, 250, 0.5);
+    }
+    .data-table tr:hover td { background: rgba(46, 178, 194, 0.04); }
+    .data-table a.view-link {
+      color: var(--teal-deep);
+      font-weight: 600;
+    }
+    .data-table a.view-link:hover { text-decoration: underline; }
+
+    .role-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(27, 59, 125, 0.08);
+      color: var(--navy);
+    }
+    .role-badge.caregiver { background: rgba(46, 178, 194, 0.14); color: var(--teal-deep); }
+    .role-badge.nurse { background: rgba(27, 59, 125, 0.14); color: var(--navy-deep); }
+
+    .answer-list { padding: 8px 0; }
+    .answer-row {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 16px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .answer-row:last-child { border-bottom: none; }
+    .answer-row .q {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--sage);
+    }
+    .answer-row .a {
+      font-size: 0.95rem;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--sage);
+    }
+
+    .messages { padding: 0 28px; margin-top: 12px; }
+    .messages .msg {
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(46, 178, 194, 0.12);
+      color: var(--teal-deep);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .dash-layout { grid-template-columns: 1fr; }
+      .dash-sidebar {
+        position: relative;
+        height: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 16px;
+      }
+      .dash-nav { flex-direction: row; flex-wrap: wrap; flex: unset; }
+      .dash-sidebar-footer {
+        border-top: none;
+        padding-top: 0;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .answer-row { grid-template-columns: 1fr; gap: 6px; }
+    }
+
+    @media print {
+      .dash-sidebar, .dash-topbar, .dash-actions, .filter-bar, .no-print { display: none !important; }
+      .dash-layout { display: block; }
+      .dash-content { padding: 0; }
+      .panel { border: none; }
+    }
+  </style>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <div class="dash-layout">
+    <aside class="dash-sidebar">
+      <div class="dash-brand">
+        <span>60-Day Pilot</span>
+        Airamed Dashboard
+      </div>
+      <nav class="dash-nav" aria-label="Dashboard navigation">
+        <a href="{% url 'pilot_dashboard_overview' %}" class="{% if active_nav == 'overview' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>
+          Overview
+        </a>
+        <a href="{% url 'pilot_dashboard_responses' %}" class="{% if active_nav == 'responses' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          All responses
+        </a>
+      </nav>
+      <div class="dash-sidebar-footer">
+        <a href="{% url 'home' %}">← Back to site</a>
+        <a href="{% url 'pilot_dashboard_logout' %}">Sign out</a>
+      </div>
+    </aside>
+
+    <div class="dash-main">
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+        <div class="msg">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <header class="dash-topbar">
+        <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+        <div class="dash-actions no-print">
+          {% block top_actions %}{% endblock %}
+        </div>
+      </header>
+
+      <div class="dash-content">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
