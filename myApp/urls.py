@@ -17,8 +17,10 @@ urlpatterns = [
     path('api/visit/summarize/', views.visit_summarize, name='visit_summarize'),
     path('api/visit/email-summary/', views.visit_email_summary, name='visit_email_summary'),
     path('api/pilot-survey/', views.pilot_survey_submit, name='pilot_survey_submit'),
+    path('api/hooks/planner-signup/', views.planner_signup_webhook, name='planner_signup_webhook'),
 
     # Custom pilot dashboard (not Django admin)
+
     path('pilot-dashboard/login/', pilot_dashboard_views.pilot_dashboard_login, name='pilot_dashboard_login'),
     path('pilot-dashboard/logout/', pilot_dashboard_views.pilot_dashboard_logout, name='pilot_dashboard_logout'),
     path('pilot-dashboard/', pilot_dashboard_views.pilot_dashboard_overview, name='pilot_dashboard_overview'),
