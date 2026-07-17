@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from . import onboarding_views
 from . import pilot_dashboard_views
 
 urlpatterns = [
@@ -19,6 +20,12 @@ urlpatterns = [
     path('api/pilot-survey/', views.pilot_survey_submit, name='pilot_survey_submit'),
     path('api/hooks/planner-signup/', views.planner_signup_webhook, name='planner_signup_webhook'),
 
+    # Client onboarding wizard (public)
+    path('onboard/', onboarding_views.onboarding_start, name='onboarding_start'),
+    path('onboard/<uuid:token>/', onboarding_views.onboarding_resume, name='onboarding_resume'),
+    path('onboard/<uuid:token>/step/<int:step>/', onboarding_views.onboarding_step, name='onboarding_step'),
+    path('onboard/<uuid:token>/done/', onboarding_views.onboarding_done, name='onboarding_done'),
+
     # Custom pilot dashboard (not Django admin)
 
     path('pilot-dashboard/login/', pilot_dashboard_views.pilot_dashboard_login, name='pilot_dashboard_login'),
@@ -30,4 +37,10 @@ urlpatterns = [
     path('pilot-dashboard/export/pdf/', pilot_dashboard_views.pilot_dashboard_export_pdf, name='pilot_dashboard_export_pdf'),
     path('pilot-dashboard/responses/<int:response_id>/pdf/', pilot_dashboard_views.pilot_dashboard_export_pdf_detail, name='pilot_dashboard_export_pdf_detail'),
     path('pilot-dashboard/print/', pilot_dashboard_views.pilot_dashboard_print, name='pilot_dashboard_print'),
+
+    # Client onboarding pipeline (custom dashboard)
+    path('pilot-dashboard/clients/', pilot_dashboard_views.pilot_dashboard_clients, name='pilot_dashboard_clients'),
+    path('pilot-dashboard/clients/new/', pilot_dashboard_views.pilot_dashboard_client_new, name='pilot_dashboard_client_new'),
+    path('pilot-dashboard/clients/<int:client_id>/', pilot_dashboard_views.pilot_dashboard_client_detail, name='pilot_dashboard_client_detail'),
+    path('pilot-dashboard/clients/<int:client_id>/status/', pilot_dashboard_views.pilot_dashboard_client_status, name='pilot_dashboard_client_status'),
 ]

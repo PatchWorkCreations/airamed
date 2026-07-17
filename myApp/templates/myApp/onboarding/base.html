@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Pilot Onboarding{% endblock %} — AiraMed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1B3B7D;
+      --navy-deep: #152E63;
+      --teal: #2EB2C2;
+      --teal-deep: #249DA8;
+      --ivory: #F2F6FA;
+      --ink: #1A2E4A;
+      --sage: #5E7084;
+      --white: #FFFFFF;
+      --line: rgba(27, 59, 125, 0.14);
+      --error: #B4232C;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: linear-gradient(180deg, var(--navy) 0%, var(--navy-deep) 260px, var(--ivory) 260px);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    a { color: var(--teal-deep); text-decoration: none; }
+
+    .ob-shell { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; }
+    .ob-brand {
+      color: var(--white);
+      font-family: 'Fraunces', serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .ob-brand span {
+      display: block;
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 0.74rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 6px;
+    }
+    .ob-tagline { color: rgba(255,255,255,0.75); font-size: 0.95rem; margin-bottom: 26px; }
+
+    .ob-progress { display: flex; gap: 6px; margin-bottom: 18px; }
+    .ob-progress .seg {
+      flex: 1;
+      text-align: center;
+      color: rgba(255,255,255,0.55);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .ob-progress .seg .bar {
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.22);
+      margin-bottom: 7px;
+    }
+    .ob-progress .seg.done .bar { background: var(--teal); }
+    .ob-progress .seg.current { color: var(--white); }
+    .ob-progress .seg.current .bar { background: var(--teal); }
+
+    .ob-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 32px;
+      box-shadow: 0 18px 44px rgba(21, 46, 99, 0.14);
+    }
+    .ob-step-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--teal-deep);
+      margin-bottom: 6px;
+    }
+    .ob-card h1 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.7rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .ob-intro { color: var(--sage); font-size: 1rem; margin-bottom: 26px; line-height: 1.55; }
+
+    .ob-section { margin-bottom: 26px; }
+    .ob-section h2 {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: var(--ink);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 6px;
+    }
+    .ob-section .section-help { font-size: 0.88rem; color: var(--sage); margin-bottom: 12px; }
+
+    .ob-field { margin: 14px 0; }
+    .ob-field > label.field-label {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .ob-field .req { color: var(--teal-deep); }
+    .ob-field input[type="text"],
+    .ob-field input[type="email"],
+    .ob-field input[type="tel"],
+    .ob-field input[type="date"],
+    .ob-field select,
+    .ob-field textarea {
+      width: 100%;
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.96rem;
+      color: var(--ink);
+      background: var(--white);
+    }
+    .ob-field textarea { min-height: 90px; resize: vertical; }
+    .ob-field input:focus, .ob-field select:focus, .ob-field textarea:focus {
+      outline: 2px solid rgba(46, 178, 194, 0.45);
+      border-color: var(--teal);
+    }
+    .ob-field.has-error input, .ob-field.has-error select, .ob-field.has-error textarea { border-color: var(--error); }
+    .field-error { color: var(--error); font-size: 0.84rem; margin-top: 5px; font-weight: 600; }
+
+    .choice-group { display: flex; flex-direction: column; gap: 8px; }
+    .choice {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.94rem;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .choice:hover { border-color: var(--teal); }
+    .choice input { margin-top: 3px; accent-color: var(--teal-deep); }
+    .choice.checked { border-color: var(--teal); background: rgba(46, 178, 194, 0.07); }
+
+    .ob-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+    .ob-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .ob-btn:hover { border-color: var(--navy); }
+    .ob-btn.primary {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: var(--white);
+    }
+    .ob-btn.primary:hover { background: var(--teal-deep); border-color: var(--teal-deep); }
+
+    .resume-note {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 13px 16px;
+      background: rgba(46, 178, 194, 0.09);
+      border: 1px solid rgba(46, 178, 194, 0.3);
+      border-radius: 12px;
+      font-size: 0.88rem;
+      color: var(--ink);
+    }
+    .resume-note code {
+      flex: 1;
+      min-width: 200px;
+      font-size: 0.8rem;
+      color: var(--sage);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .copy-btn {
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(46, 178, 194, 0.5);
+      background: var(--white);
+      color: var(--teal-deep);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .copy-btn:hover { background: rgba(46, 178, 194, 0.1); }
+
+    .ob-footer { text-align: center; margin-top: 22px; font-size: 0.86rem; color: var(--sage); }
+
+    @media (max-width: 640px) {
+      .ob-card { padding: 22px 18px; }
+      .ob-progress .seg { font-size: 0; }   /* bars only on small screens */
+      .ob-progress .seg .bar { margin-bottom: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ob-shell">
+    <div class="ob-brand"><span>Pilot Partnership</span>AiraMed</div>
+    <p class="ob-tagline">Understanding is a clinical outcome.</p>
+    {% block progress %}{% endblock %}
+    <div class="ob-card">
+      {% block content %}{% endblock %}
+    </div>
+    <p class="ob-footer">Questions? <a href="{% url 'contact' %}">Contact the AiraMed team</a> — we typically reply within one business day.</p>
+  </div>
+  <script>
+    document.querySelectorAll('.copy-btn[data-copy]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        navigator.clipboard.writeText(btn.dataset.copy).then(function () {
+          var original = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(function () { btn.textContent = original; }, 1600);
+        });
+      });
+    });
+    document.querySelectorAll('.choice input').forEach(function (input) {
+      var sync = function () {
+        if (input.type === 'radio') {
+          document.querySelectorAll('.choice input[name="' + input.name + '"]').forEach(function (peer) {
+            peer.closest('.choice').classList.toggle('checked', peer.checked);
+          });
+        } else {
+          input.closest('.choice').classList.toggle('checked', input.checked);
+        }
+      };
+      input.addEventListener('change', sync);
+      sync();
+    });
+  </script>
+</body>
+</html>

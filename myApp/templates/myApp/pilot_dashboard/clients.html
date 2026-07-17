@@ -1,0 +1,205 @@
+{% extends 'myApp/pilot_dashboard/base.html' %}
+
+{% block title %}Clients{% endblock %}
+{% block page_title %}Client onboarding pipeline{% endblock %}
+
+{% block head_extra %}
+<style>
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .status-badge.invited { background: rgba(94, 112, 132, 0.14); color: var(--sage); }
+  .status-badge.progress { background: rgba(233, 168, 38, 0.16); color: #9A6B00; }
+  .status-badge.complete { background: rgba(46, 178, 194, 0.16); color: var(--teal-deep); }
+  .status-badge.kickoff { background: rgba(27, 59, 125, 0.12); color: var(--navy); }
+  .status-badge.active { background: rgba(36, 157, 92, 0.16); color: #1B7A46; }
+  .status-badge.evaluation { background: rgba(122, 82, 199, 0.14); color: #6640B2; }
+  .status-badge.decision { background: rgba(27, 46, 74, 0.14); color: var(--ink); }
+
+  .add-client-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    padding: 16px 18px;
+    align-items: end;
+  }
+  .add-client-form label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--sage);
+    margin-bottom: 5px;
+  }
+  .add-client-form input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.9rem;
+  }
+  details.add-client > summary { list-style: none; cursor: pointer; }
+  details.add-client > summary::-webkit-details-marker { display: none; }
+
+  .link-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.86rem;
+    color: var(--sage);
+    flex-wrap: wrap;
+  }
+  .link-chip code {
+    background: rgba(27, 59, 125, 0.06);
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+  .copy-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--teal-deep);
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .copy-btn:hover { border-color: var(--teal); }
+</style>
+{% endblock %}
+
+{% block top_actions %}
+<a class="dash-btn" href="{{ evergreen_url }}" target="_blank" rel="noopener">View public onboarding ↗</a>
+{% endblock %}
+
+{% block content %}
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="label">Total clients</div>
+    <div class="value">{{ stats.total }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">In onboarding</div>
+    <div class="value">{{ stats.in_onboarding }}</div>
+    <div class="sub">Invited or mid-wizard</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Onboarding complete</div>
+    <div class="value">{{ stats.intake_complete }}</div>
+    <div class="sub">Ready for kickoff</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Active pilots</div>
+    <div class="value">{{ stats.active }}</div>
+  </div>
+</div>
+
+<div class="panel">
+  <details class="add-client" {% if stats.total == 0 %}open{% endif %}>
+    <summary class="panel-head">
+      <h2>＋ Add a client & generate their invite link</h2>
+      <span style="font-size: 0.84rem; color: var(--sage);">click to expand</span>
+    </summary>
+    <form method="post" action="{% url 'pilot_dashboard_client_new' %}" class="add-client-form">
+      {% csrf_token %}
+      <div>
+        <label for="new_name">Organization *</label>
+        <input type="text" id="new_name" name="name" required placeholder="Mercy General Health System">
+      </div>
+      <div>
+        <label for="new_department">Department</label>
+        <input type="text" id="new_department" name="department" placeholder="Cardiology">
+      </div>
+      <div>
+        <label for="new_contact_name">Contact name</label>
+        <input type="text" id="new_contact_name" name="contact_name" placeholder="Jordan Lee">
+      </div>
+      <div>
+        <label for="new_contact_email">Contact email</label>
+        <input type="email" id="new_contact_email" name="contact_email" placeholder="jordan@health.org">
+      </div>
+      <button type="submit" class="dash-btn primary">Create client</button>
+    </form>
+  </details>
+  <div class="link-chip">
+    <span>Evergreen link for proposals (anyone can start onboarding):</span>
+    <code>{{ evergreen_url }}</code>
+    <button type="button" class="copy-btn" data-copy="{{ evergreen_url }}">Copy</button>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-head">
+    <h2>Clients{% if status_filter %} — filtered{% endif %}</h2>
+  </div>
+  <form method="get" class="filter-bar">
+    <select name="status" onchange="this.form.submit()">
+      <option value="">All stages</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <noscript><button type="submit" class="dash-btn">Filter</button></noscript>
+  </form>
+
+  {% if rows %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Organization</th>
+        <th>Department</th>
+        <th>Contact</th>
+        <th>Stage</th>
+        <th>Onboarding</th>
+        <th>Added</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td><strong>{{ row.org.name }}</strong></td>
+        <td>{{ row.org.department|default:'—' }}</td>
+        <td>
+          {{ row.org.primary_contact_name|default:'—' }}
+          {% if row.org.primary_contact_email %}<br><span style="color: var(--sage); font-size: 0.82rem;">{{ row.org.primary_contact_email }}</span>{% endif %}
+        </td>
+        <td><span class="status-badge {{ row.badge_class }}">{{ row.org.get_status_display }}</span></td>
+        <td>{{ row.progress }}</td>
+        <td>{{ row.org.created_at|date:'M j, Y' }}</td>
+        <td><a class="view-link" href="{% url 'pilot_dashboard_client_detail' client_id=row.org.pk %}">View →</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <p><strong>No clients yet.</strong></p>
+    <p style="margin-top: 6px;">Add your first client above, or share the evergreen onboarding link in your next proposal email.</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      navigator.clipboard.writeText(btn.dataset.copy).then(function () {
+        var original = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(function () { btn.textContent = original; }, 1600);
+      });
+    });
+  });
+</script>
+{% endblock %}

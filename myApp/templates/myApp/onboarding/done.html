@@ -1,0 +1,36 @@
+{% extends 'myApp/onboarding/base.html' %}
+
+{% block title %}Onboarding complete{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 8px 0 4px;">
+  <div style="width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 50%; background: rgba(46,178,194,0.14); display: flex; align-items: center; justify-content: center;">
+    <svg viewBox="0 0 24 24" fill="none" style="width: 32px; height: 32px;"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="#249DA8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <p class="ob-step-label">Onboarding complete</p>
+  <h1>Welcome aboard, {{ org.name }}.</h1>
+  <p class="ob-intro" style="max-width: 520px; margin: 8px auto 0;">
+    Your pilot details are with the AiraMed team, and a confirmation email is on its way.
+    We'll confirm your staff briefing time within one business day.
+  </p>
+</div>
+
+<div class="ob-section" style="margin-top: 28px;">
+  <h2>What happens next — your 60-day pilot</h2>
+  <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 0;">
+    {% for item in timeline %}
+    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 14px; padding: 13px 0; border-bottom: 1px solid rgba(27,59,125,0.1);">
+      <div style="font-weight: 700; color: #249DA8; font-size: 0.9rem;">{{ item.weeks }}</div>
+      <div>
+        <strong>{{ item.title }}</strong>
+        <p style="color: #5E7084; font-size: 0.9rem; margin-top: 2px;">{{ item.desc }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="resume-note">
+  <span>📌 Bookmark this page — it's your pilot home base while we get started.</span>
+</div>
+{% endblock %}

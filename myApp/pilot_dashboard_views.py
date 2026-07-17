@@ -5,9 +5,11 @@ from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_GET, require_http_methods
+from django.urls import reverse
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from .models import PilotSurveyResponse
+from .models import ClientOrganization, PilotSurveyResponse
+from .onboarding import TOTAL_STEPS, answers_by_step
 from .pilot_dashboard import (
     build_excel,
     build_pdf_detail,
@@ -148,6 +150,121 @@ def pilot_dashboard_export_pdf_detail(request, response_id: int):
     response = HttpResponse(content, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
+
+
+# --- Client onboarding pipeline -------------------------------------------
+
+STATUS_BADGE_CLASSES = {
+    ClientOrganization.STATUS_INVITED: 'invited',
+    ClientOrganization.STATUS_INTAKE_STARTED: 'progress',
+    ClientOrganization.STATUS_INTAKE_COMPLETE: 'complete',
+    ClientOrganization.STATUS_KICKOFF_SCHEDULED: 'kickoff',
+    ClientOrganization.STATUS_ACTIVE_PILOT: 'active',
+    ClientOrganization.STATUS_EVALUATION: 'evaluation',
+    ClientOrganization.STATUS_DECISION: 'decision',
+}
+
+STATUS_ORDER = [status for status, _ in ClientOrganization.STATUS_CHOICES]
+
+
+def _client_row(request, org: ClientOrganization) -> dict:
+    submission = getattr(org, 'onboarding', None)
+    if submission is None:
+        progress = 'Not started'
+    elif submission.is_complete:
+        progress = 'Completed'
+    else:
+        progress = f'Step {submission.current_step} of {TOTAL_STEPS}'
+    return {
+        'org': org,
+        'progress': progress,
+        'badge_class': STATUS_BADGE_CLASSES.get(org.status, 'invited'),
+        'invite_url': request.build_absolute_uri(reverse('onboarding_resume', args=[org.invite_token])),
+    }
+
+
+@pilot_dashboard_required
+@require_GET
+def pilot_dashboard_clients(request):
+    orgs = ClientOrganization.objects.select_related('onboarding').all()
+    status_filter = (request.GET.get('status') or '').strip()
+    if status_filter in STATUS_ORDER:
+        orgs = orgs.filter(status=status_filter)
+
+    all_orgs = ClientOrganization.objects.all()
+    onboarding_statuses = [ClientOrganization.STATUS_INVITED, ClientOrganization.STATUS_INTAKE_STARTED]
+    stats = {
+        'total': all_orgs.count(),
+        'in_onboarding': all_orgs.filter(status__in=onboarding_statuses).count(),
+        'intake_complete': all_orgs.filter(status=ClientOrganization.STATUS_INTAKE_COMPLETE).count(),
+        'active': all_orgs.filter(status=ClientOrganization.STATUS_ACTIVE_PILOT).count(),
+    }
+    return render(request, 'myApp/pilot_dashboard/clients.html', {
+        'active_nav': 'clients',
+        'rows': [_client_row(request, org) for org in orgs],
+        'stats': stats,
+        'status_filter': status_filter,
+        'status_choices': ClientOrganization.STATUS_CHOICES,
+        'evergreen_url': request.build_absolute_uri(reverse('onboarding_start')),
+    })
+
+
+@pilot_dashboard_required
+@require_POST
+def pilot_dashboard_client_new(request):
+    name = (request.POST.get('name') or '').strip()
+    if not name:
+        messages.success(request, 'Please provide the organization name.')
+        return redirect('pilot_dashboard_clients')
+    org = ClientOrganization.objects.create(
+        name=name,
+        department=(request.POST.get('department') or '').strip(),
+        primary_contact_name=(request.POST.get('contact_name') or '').strip(),
+        primary_contact_email=(request.POST.get('contact_email') or '').strip(),
+        source=ClientOrganization.SOURCE_INVITED,
+        status=ClientOrganization.STATUS_INVITED,
+    )
+    messages.success(request, f'{org.name} added — copy their invite link below and send it over.')
+    return redirect('pilot_dashboard_client_detail', client_id=org.pk)
+
+
+@pilot_dashboard_required
+@require_GET
+def pilot_dashboard_client_detail(request, client_id: int):
+    org = get_object_or_404(ClientOrganization, pk=client_id)
+    submission = getattr(org, 'onboarding', None)
+    current_index = STATUS_ORDER.index(org.status)
+    pipeline = [
+        {
+            'value': value,
+            'label': label,
+            'state': 'done' if i < current_index else ('current' if i == current_index else 'todo'),
+        }
+        for i, (value, label) in enumerate(ClientOrganization.STATUS_CHOICES)
+    ]
+    next_status = STATUS_ORDER[current_index + 1] if current_index + 1 < len(STATUS_ORDER) else None
+    return render(request, 'myApp/pilot_dashboard/client_detail.html', {
+        'active_nav': 'clients',
+        'row': _client_row(request, org),
+        'submission': submission,
+        'answer_groups': answers_by_step(submission.responses) if submission and submission.responses else [],
+        'pipeline': pipeline,
+        'next_status': next_status,
+        'next_status_label': dict(ClientOrganization.STATUS_CHOICES).get(next_status, ''),
+        'status_choices': ClientOrganization.STATUS_CHOICES,
+    })
+
+
+@pilot_dashboard_required
+@require_POST
+def pilot_dashboard_client_status(request, client_id: int):
+    org = get_object_or_404(ClientOrganization, pk=client_id)
+    new_status = (request.POST.get('status') or '').strip()
+    if new_status in STATUS_ORDER:
+        org.status = new_status
+        org.save(update_fields=['status', 'updated_at'])
+        messages.success(request, f'{org.name} moved to “{org.get_status_display()}”.')
+    return redirect('pilot_dashboard_client_detail', client_id=org.pk)
 
 
 @pilot_dashboard_required

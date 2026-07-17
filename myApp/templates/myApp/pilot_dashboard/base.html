@@ -336,6 +336,10 @@
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           All responses
         </a>
+        <a href="{% url 'pilot_dashboard_clients' %}" class="{% if active_nav == 'clients' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" transform="translate(3 0) scale(0.85)"/><circle cx="10.5" cy="7" r="3.4" stroke="currentColor" stroke-width="1.6"/><path d="M20 8v6M23 11h-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Clients
+        </a>
       </nav>
       <div class="dash-sidebar-footer">
         <a href="{% url 'home' %}">← Back to site</a>

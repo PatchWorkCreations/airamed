@@ -1,0 +1,170 @@
+{% extends 'myApp/pilot_dashboard/base.html' %}
+
+{% block title %}{{ row.org.name }}{% endblock %}
+{% block page_title %}{{ row.org.name }}{% endblock %}
+
+{% block head_extra %}
+<style>
+  .pipeline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 18px;
+  }
+  .pipeline .stage {
+    flex: 1;
+    min-width: 118px;
+    text-align: center;
+    padding: 12px 8px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--sage);
+    background: var(--white);
+  }
+  .pipeline .stage.done { background: rgba(46, 178, 194, 0.1); border-color: rgba(46, 178, 194, 0.4); color: var(--teal-deep); }
+  .pipeline .stage.current { background: var(--navy); border-color: var(--navy); color: var(--white); }
+  .pipeline .stage .dot { display: block; font-size: 1rem; margin-bottom: 4px; }
+
+  .link-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    font-size: 0.86rem;
+    color: var(--sage);
+    flex-wrap: wrap;
+  }
+  .link-chip code {
+    background: rgba(27, 59, 125, 0.06);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    word-break: break-all;
+  }
+  .copy-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--teal-deep);
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .copy-btn:hover { border-color: var(--teal); }
+
+  .status-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-top: 1px solid var(--line);
+  }
+  .status-actions select {
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.9rem;
+  }
+</style>
+{% endblock %}
+
+{% block top_actions %}
+<a class="dash-btn" href="{% url 'pilot_dashboard_clients' %}">← All clients</a>
+<button type="button" class="dash-btn primary copy-btn-main" data-copy="{{ row.invite_url }}">Copy invite link</button>
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-head"><h2>Pilot pipeline</h2></div>
+  <div class="pipeline">
+    {% for stage in pipeline %}
+    <div class="stage {{ stage.state }}">
+      <span class="dot">{% if stage.state == 'done' %}✓{% elif stage.state == 'current' %}●{% else %}○{% endif %}</span>
+      {{ stage.label }}
+    </div>
+    {% endfor %}
+  </div>
+  <div class="status-actions">
+    {% if next_status %}
+    <form method="post" action="{% url 'pilot_dashboard_client_status' client_id=row.org.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="status" value="{{ next_status }}">
+      <button type="submit" class="dash-btn primary">Advance to “{{ next_status_label }}” →</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{% url 'pilot_dashboard_client_status' client_id=row.org.pk %}" style="display: flex; gap: 8px; align-items: center;">
+      {% csrf_token %}
+      <select name="status">
+        {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if row.org.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="dash-btn">Set stage</button>
+    </form>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-head"><h2>Invite link</h2></div>
+  <div class="link-chip">
+    <span>Send this to {{ row.org.primary_contact_name|default:'the client' }} — it saves their progress and lets them resume anytime:</span>
+    <code>{{ row.invite_url }}</code>
+    <button type="button" class="copy-btn" data-copy="{{ row.invite_url }}">Copy</button>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-head">
+    <h2>Client record</h2>
+    <span style="font-size: 0.84rem; color: var(--sage);">{{ row.org.get_source_display }} · added {{ row.org.created_at|date:'M j, Y' }}</span>
+  </div>
+  <div class="answer-list">
+    <div class="answer-row"><div class="q">Organization</div><div class="a">{{ row.org.name }}</div></div>
+    <div class="answer-row"><div class="q">Department</div><div class="a">{{ row.org.department|default:'—' }}</div></div>
+    <div class="answer-row"><div class="q">Primary contact</div><div class="a">{{ row.org.primary_contact_name|default:'—' }}{% if row.org.primary_contact_email %} &lt;{{ row.org.primary_contact_email }}&gt;{% endif %}</div></div>
+    <div class="answer-row"><div class="q">Onboarding progress</div><div class="a">{{ row.progress }}{% if submission and submission.completed_at %} on {{ submission.completed_at|date:'M j, Y, g:i a' }}{% endif %}</div></div>
+  </div>
+</div>
+
+{% if answer_groups %}
+{% for group in answer_groups %}
+<div class="panel">
+  <div class="panel-head"><h2>Step {{ group.number }} — {{ group.title }}</h2></div>
+  <div class="answer-list">
+    {% for item in group.rows %}
+    <div class="answer-row">
+      <div class="q">{{ item.label }}</div>
+      <div class="a">{{ item.value }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="panel">
+  <div class="panel-head"><h2>Onboarding answers</h2></div>
+  <div class="empty-state">
+    <p><strong>Nothing submitted yet.</strong></p>
+    <p style="margin-top: 6px;">Once {{ row.org.name }} opens their invite link and starts the wizard, their answers appear here step by step.</p>
+  </div>
+</div>
+{% endif %}
+
+<script>
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      navigator.clipboard.writeText(btn.dataset.copy).then(function () {
+        var original = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(function () { btn.textContent = original; }, 1600);
+      });
+    });
+  });
+</script>
+{% endblock %}

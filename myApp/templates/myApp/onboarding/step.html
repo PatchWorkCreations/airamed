@@ -1,0 +1,111 @@
+{% extends 'myApp/onboarding/base.html' %}
+{% load onboarding_extras %}
+
+{% block title %}Step {{ step.number }} of {{ total_steps }} — {{ step.title }}{% endblock %}
+
+{% block progress %}
+<div class="ob-progress" aria-label="Onboarding progress">
+  {% for s in steps_nav %}
+  <div class="seg {% if s.number < step.number %}done{% elif s.number == step.number %}current{% endif %}">
+    <div class="bar"></div>{{ s.nav_label }}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block content %}
+<p class="ob-step-label">Step {{ step.number }} of {{ total_steps }}</p>
+<h1>{{ step.title }}</h1>
+<p class="ob-intro">{{ step.intro }}</p>
+
+{% if errors %}
+<p class="field-error" style="margin-bottom: 16px;">Please fix the highlighted fields below to continue.</p>
+{% endif %}
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% for section in step.sections %}
+  <div class="ob-section">
+    <h2>{{ section.heading }}</h2>
+    {% if section.help %}<p class="section-help">{{ section.help }}</p>{% endif %}
+
+    {% for field in section.fields %}
+    <div class="ob-field {% if field.key in errors %}has-error{% endif %}">
+      {% if field.type == 'checkbox' %}
+        <label class="choice {% if values|get_item:field.key %}checked{% endif %}">
+          <input type="checkbox" name="{{ field.key }}" {% if values|get_item:field.key %}checked{% endif %}>
+          <span>{{ field.label }}{% if field.required %} <span class="req">*</span>{% endif %}</span>
+        </label>
+      {% else %}
+        <label class="field-label" for="id_{{ field.key }}">
+          {{ field.label }}{% if field.required %} <span class="req">*</span>{% endif %}
+        </label>
+
+        {% if field.type == 'select' %}
+          <select name="{{ field.key }}" id="id_{{ field.key }}">
+            <option value="">Select…</option>
+            {% for opt in field.options %}
+            <option value="{{ opt }}" {% if values|get_item:field.key == opt %}selected{% endif %}>{{ opt }}</option>
+            {% endfor %}
+          </select>
+
+        {% elif field.type == 'radio' %}
+          <div class="choice-group">
+            {% for opt in field.options %}
+            <label class="choice">
+              <input type="radio" name="{{ field.key }}" value="{{ opt }}"
+                     {% if values|get_item:field.key == opt %}checked{% endif %}>
+              <span>{{ opt }}</span>
+            </label>
+            {% endfor %}
+          </div>
+
+        {% elif field.type == 'multiselect' %}
+          <div class="choice-group">
+            {% for opt in field.options %}
+            <label class="choice">
+              <input type="checkbox" name="{{ field.key }}" value="{{ opt }}"
+                     {% if opt in values|get_list:field.key %}checked{% endif %}>
+              <span>{{ opt }}</span>
+            </label>
+            {% endfor %}
+          </div>
+
+        {% elif field.type == 'textarea' %}
+          <textarea name="{{ field.key }}" id="id_{{ field.key }}"
+                    placeholder="{{ field.placeholder|default:'' }}">{{ values|get_item:field.key|default:'' }}</textarea>
+
+        {% else %}
+          <input type="{{ field.type }}" name="{{ field.key }}" id="id_{{ field.key }}"
+                 value="{{ values|get_item:field.key|default:'' }}"
+                 placeholder="{{ field.placeholder|default:'' }}">
+        {% endif %}
+      {% endif %}
+
+      {% if field.help %}<p class="section-help" style="margin: 5px 0 0;">{{ field.help }}</p>{% endif %}
+      {% if field.key in errors %}<p class="field-error">{{ errors|get_item:field.key }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  <div class="ob-actions">
+    {% if org and step.number > 1 %}
+    <a class="ob-btn" href="{% url 'onboarding_step' token=org.invite_token step=step.number|add:'-1' %}">← Back</a>
+    {% else %}
+    <span></span>
+    {% endif %}
+    <button type="submit" class="ob-btn primary">
+      {% if step.number == total_steps %}Complete onboarding{% else %}Save & continue →{% endif %}
+    </button>
+  </div>
+</form>
+
+{% if invite_url %}
+<div class="resume-note">
+  <span>💾 Progress saved. Resume anytime with your personal link:</span>
+  <code>{{ invite_url }}</code>
+  <button type="button" class="copy-btn" data-copy="{{ invite_url }}">Copy link</button>
+</div>
+{% endif %}
+{% endblock %}
